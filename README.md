@@ -1,4 +1,4 @@
-purescript-halogen-medialib
+purescript-halogen-media-library
 ===========================
 
 A media library | browser | uploader | manager to use with [purescript-halogen](https://github.com/slamdata/purescript-halogen).
