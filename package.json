@@ -1,0 +1,11 @@
+{
+  "name": "purescript-halogen-media-library",
+  "version": "0.1.0",
+  "description": "Purescript Halogen Media Library",
+  "main": "index.js",
+  "author": "Thordur Hermannsson",
+  "license": "MIT",
+  "dependencies": {
+    "http-server": "^0.11.1"
+  }
+}
