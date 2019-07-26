@@ -1,15 +1,19 @@
 module Halogen.Media.Utils where
 
 import Prelude 
-import Data.Array           ((..), catMaybes)
-import Data.Maybe           (Maybe(..))
-import Web.File.FileList    as FL
-import Web.File.File        as File
+import Control.Monad.Except     (runExcept)
+import Effect                   (Effect, untilE)
+import Effect.Class.Console     (logShow)
+import Data.Array               ((..), catMaybes)
+import Data.Either              (Either(..))
+import Data.Maybe               (Maybe(..))
+import Web.File.FileList        as FL
+import Web.File.File            as File
 
--- Filelists are not so
--- convenient to work with
--- so here we are changing 
--- from type FileList -> Array File
+
+-- | Utility function to go from
+-- Maybe FL.FileList
+-- to Array of File objects
 fileListToFiles :: Maybe FL.FileList -> Array File.File
 fileListToFiles fl = case fl of
   Just files -> do

@@ -17,6 +17,8 @@ You can edit this file as you like.
     , "const"
     , "web-file"
     , "web-events"
+    , "dom-filereader"
+    , "uuid"
     ]
 , packages =
     ./packages.dhall

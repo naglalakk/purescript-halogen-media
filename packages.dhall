@@ -116,6 +116,22 @@ let upstream =
 
 let overrides = {=}
 
-let additions = {=}
+let additions = 
+  { dom-filereader =
+      mkPackage
+      [ "web-html"
+      , "aff"
+      , "arraybuffer-types"
+      , "web-file"
+      ]
+      "https://github.com/nwolverson/purescript-dom-filereader"
+      "master"
+  , uuid =
+      mkPackage
+      [ "effect"
+      ]
+      "https://github.com/spicydonuts/purescript-uuid"
+      "master"
+  }
 
 in  upstream // overrides // additions

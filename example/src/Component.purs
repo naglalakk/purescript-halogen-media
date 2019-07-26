@@ -3,6 +3,7 @@ module Example.Component where
 import Prelude
 import Effect.Class.Console                 (logShow)
 import Effect.Class                         (class MonadEffect)
+import Effect.Aff.Class                     (class MonadAff)
 import Data.Const                           (Const)
 import Data.Maybe                           (Maybe(..))
 import Halogen                              as H
@@ -32,6 +33,7 @@ type ChildSlots = (
 
 component :: forall m
            . MonadEffect m
+          => MonadAff m
           => H.Component HH.HTML Query Input Void m
 component = 
   H.mkComponent
@@ -60,13 +62,6 @@ component =
         unit
         Browser.component
         { media: state.media
-        , selectedTab: Just Browser.DisplayTab }
-        (Just <<< HandleBrowserAction)
-      , HH.slot 
-        (SProxy :: _ "mediaBrowser") 
-        unit
-        Browser.component
-        { media: state.media
-        , selectedTab: Just Browser.UploadTab }
+        , selectedTab: Nothing }
         (Just <<< HandleBrowserAction)
       ]

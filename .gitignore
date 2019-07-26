@@ -9,5 +9,9 @@
 /.psa*
 /.spago
 
+build/
+dist/
+
+.cache
 .DS_Store
 yarn-error.log

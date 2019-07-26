@@ -6,10 +6,12 @@ install:
 	spago install && $(PCK_MANAGER) install
 
 example:
-	make bundle && http-server -o
+	make browser && http-server -o
+browser:
+	make bundle && parcel build example/build/index.js -d example/dist
 
 bundle:
-	spago build --path 'example/**/*.purs' && spago bundle-app --main Example.Main --to example/dist/index.js
+	spago build --path 'example/**/*.purs' && spago bundle-app --main Example.Main --to example/build/index.js
 
 test:
 	spago test
