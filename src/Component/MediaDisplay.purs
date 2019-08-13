@@ -30,6 +30,7 @@ type Query = Const Void
 
 data Action
   = ClickMedia Media
+  | Receive Input
 
 data Output
   = ClickedMedia Media
@@ -47,6 +48,7 @@ component =
   , render
   , eval: H.mkEval H.defaultEval
     { handleAction = handleAction
+    , receive = Just <<< Receive
     }
   }
   where
@@ -57,7 +59,7 @@ component =
 
   handleAction = case _ of
     (ClickMedia media) -> H.raise $ ClickedMedia media
-    _ -> pure unit
+    Receive input -> H.put input
 
   renderMedia media =
     HH.div
