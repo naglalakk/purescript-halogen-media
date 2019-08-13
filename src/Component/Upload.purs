@@ -48,10 +48,10 @@ import Halogen.Media.Utils                  (fileListToFiles)
 import Data.UUID                            (UUID(..)
                                             ,genUUID)
 
--- | Extended file contains a unique UUID 
+-- | Extended file contains a unique UUID
 -- for identification and a (Maybe String)
 -- that represents the thumbnail of the file
-data ExtendedFile 
+data ExtendedFile
   = ExtendedFile File.File UUID (Maybe String)
 
 type State =
@@ -59,13 +59,13 @@ type State =
   , reader :: Maybe FileReader.FileReader
   }
 
-data Output 
+data Output
   = DroppedFiles (Array ExtendedFile)
   | UploadFiles  (Array ExtendedFile)
 
 type Input = Unit
 
-data Action 
+data Action
   = Initialize
   | HandleFileUpload UUID (Effect Foreign)
   | SetFiles DE.DragEvent
@@ -78,27 +78,27 @@ type Query = Const Void
 derive instance genericOutput :: Generic Output _
 
 instance showOutput :: Show Output where
-  show (UploadFiles  fl) = 
-    show $ 
+  show (UploadFiles  fl) =
+    show $
       map (\(ExtendedFile f uuid thumb) -> File.name f) fl
-  show (DroppedFiles fl) = 
-    show $ 
+  show (DroppedFiles fl) =
+    show $
       map (\(ExtendedFile f uuid thumb) -> File.name f) fl
 
 
 -- Util function for updating
 -- the thumbnail of a Extended file
 setThumb :: String
-         -> ExtendedFile 
          -> ExtendedFile
-setThumb thumb (ExtendedFile f u t) 
+         -> ExtendedFile
+setThumb thumb (ExtendedFile f u t)
   = ExtendedFile f u (Just thumb)
 
 component :: forall m
            . MonadEffect m
           => MonadAff m
           => H.Component HH.HTML Query Input Output m
-component = 
+component =
   H.mkComponent
   { initialState: const initialState
   , render
@@ -128,8 +128,8 @@ component =
   fileEventSource :: FileReader.FileReader
                   -> HES.EventSource m (Effect Foreign)
   fileEventSource fileReader =
-    HES.eventListenerEventSource 
-      load 
+    HES.eventListenerEventSource
+      load
       (FileReader.toEventTarget fileReader)
       fileCallback
 
@@ -142,7 +142,7 @@ component =
       src <- H.liftEffect fr
       let thumbnail = runExcept $ readString src
       case thumbnail of
-        Right thumb -> do 
+        Right thumb -> do
           state <- H.get
           let index = findIndex (\(ExtendedFile f u t) -> u == uuid) state.files
           case index of
@@ -158,14 +158,14 @@ component =
       H.liftEffect $ EV.preventDefault ev
 
     SetFiles ev -> do
-      state <- H.get 
-      let 
+      state <- H.get
+      let
         event = DE.toEvent ev
-        eventTarget = unsafePartial 
-                    $ fromJust 
+        eventTarget = unsafePartial
+                    $ fromJust
                     $ EV.currentTarget event
-        droppedFiles = fileListToFiles 
-                     $ DT.files 
+        droppedFiles = fileListToFiles
+                     $ DT.files
                      $ DE.dataTransfer ev
 
       H.liftEffect $ EV.preventDefault event
@@ -177,7 +177,7 @@ component =
         H.liftEffect $ FileReader.readAsDataURL blob reader
         pure $ ExtendedFile x uuid Nothing
       ) droppedFiles
-      
+
       let allFiles = state.files <> extendedFiles
 
       -- Get thumbnails for files
@@ -191,7 +191,7 @@ component =
       state <- H.get
       H.raise $ UploadFiles state.files
 
-  renderFile (ExtendedFile file uuid thumb) = 
+  renderFile (ExtendedFile file uuid thumb) =
     HH.div
       [ css "upload-file" ]
       [ HH.div
@@ -211,15 +211,15 @@ component =
       ]
 
   render :: State -> H.ComponentHTML Action ChildSlots m
-  render state = 
-    HH.div 
+  render state =
+    HH.div
       [ css "upload-container" ]
       [ HH.div
-        [ css "dropbox" 
+        [ css "dropbox"
         , HE.onDragOver $ \e -> Just $ PreventDefault $ DE.toEvent e
-        , HE.onDrop $ \e -> Just $ SetFiles e 
+        , HE.onDrop $ \e -> Just $ SetFiles e
         ]
-        [ if (length state.files <= 0) 
+        [ if (length state.files <= 0)
             then HH.text "Drop files here"
             else HH.text ""
         , HH.div
@@ -229,7 +229,7 @@ component =
       , HH.div
         [ css "upload-action" ]
         [ HH.div
-          [ css "button" 
+          [ css "button"
           , HE.onClick $ \e -> Just SubmitFiles
           ]
           [ HH.text "Upload" ]

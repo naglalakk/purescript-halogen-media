@@ -11,8 +11,8 @@ import Halogen.Media.Data.Video
 
 -- Media is a combined type of any media format
 -- we want to be able to display | upload
-data Media 
-  = MediaImage Image 
+data Media
+  = MediaImage Image
   | MediaVideo Video
 
 type MediaArray = Array Media

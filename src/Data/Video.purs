@@ -1,5 +1,6 @@
 module Halogen.Media.Data.Video where
 
+
 import Prelude
 import Data.Maybe               (Maybe(..))
 import Data.Argonaut.Encode     (class EncodeJson, encodeJson)
