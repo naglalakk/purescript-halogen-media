@@ -17,18 +17,18 @@ import Halogen.Media.Data.Image             (Image(..))
 import Halogen.Media.Data.Video             (Video(..))
 import Halogen.Media.Component.HTML.Utils   (css)
 
-type State = 
+type State =
   { media :: MediaArray
   }
 
-type Input = 
+type Input =
   { media :: MediaArray
   }
 
 type ChildSlots = ()
 type Query = Const Void
 
-data Action 
+data Action
   = ClickMedia Media
 
 data Output
@@ -41,7 +41,7 @@ instance showOutput :: Show Output where
   show = genericShow
 
 component :: forall m. H.Component HH.HTML Query Input Output m
-component = 
+component =
   H.mkComponent
   { initialState: initialState
   , render
@@ -51,7 +51,7 @@ component =
   }
   where
   initialState :: Input -> State
-  initialState { media } = 
+  initialState { media } =
     { media: media
     }
 
@@ -59,27 +59,27 @@ component =
     (ClickMedia media) -> H.raise $ ClickedMedia media
     _ -> pure unit
 
-  renderMedia media = 
+  renderMedia media =
     HH.div
-      [ css "media-item" 
+      [ css "media-item"
       , HE.onClick $ \_ -> Just $ ClickMedia media
       ]
-      [ case media of 
-        (MediaImage (Image img)) -> 
-          HH.div 
+      [ case media of
+        (MediaImage (Image img)) ->
+          HH.div
             [ css "thumbnail" ]
-            [ HH.img 
-              [ HP.src $ fromMaybe "" img.thumbnail ]
+            [ HH.img
+              [ HP.src img.src ]
             ]
-        (MediaVideo (Video video)) -> 
-          HH.div 
+        (MediaVideo (Video video)) ->
+          HH.div
             [ css "thumbnail" ]
-            [ HH.img 
-              [ HP.src $ fromMaybe "" video.thumbnail ]
+            [ HH.img
+              [ HP.src video.src ]
             ]
       ]
 
-  render :: State -> H.ComponentHTML Action ChildSlots m 
+  render :: State -> H.ComponentHTML Action ChildSlots m
   render state =
     HH.div
       [ css "media" ]
