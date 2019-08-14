@@ -47,12 +47,7 @@ import Halogen.Media.Component.HTML.Utils   (css)
 import Halogen.Media.Utils                  (fileListToFiles)
 import Data.UUID                            (UUID(..)
                                             ,genUUID)
-
--- | Extended file contains a unique UUID
--- for identification and a (Maybe String)
--- that represents the thumbnail of the file
-data ExtendedFile
-  = ExtendedFile File.File UUID (Maybe String)
+import Halogen.Media.Data.File               (ExtendedFile(..))
 
 type State =
   { files :: Array ExtendedFile

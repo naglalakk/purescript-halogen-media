@@ -63,7 +63,8 @@ component =
 
   renderMedia media =
     HH.a
-      [ css "media-item"
+      [ HP.href "#"
+      , css "media-item"
       , HE.onClick $ \_ -> Just $ ClickMedia media
       ]
       [ case media of
