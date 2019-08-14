@@ -107,8 +107,7 @@ component =
     SwitchTab tab -> do
       H.modify_ _ { selectedTab = tab }
       H.raise $ TabSwitch tab
-    Receive inp -> do
-      H.put inp { selectedTab = fromMaybe DisplayTab inp.selectedTab }
+    Receive inp -> H.put inp { selectedTab = fromMaybe DisplayTab inp.selectedTab }
 
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state =

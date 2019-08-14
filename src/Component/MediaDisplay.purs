@@ -62,7 +62,7 @@ component =
     Receive input -> H.put input
 
   renderMedia media =
-    HH.div
+    HH.a
       [ css "media-item"
       , HE.onClick $ \_ -> Just $ ClickMedia media
       ]
