@@ -164,7 +164,7 @@ component =
         eventTarget = unsafePartial
                     $ fromJust
                     $ EV.currentTarget event
-        droppedFiles = fileListToFiles
+       1 droppedFiles = fileListToFiles
                      $ DT.files
                      $ DE.dataTransfer ev
 

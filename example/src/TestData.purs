@@ -2,11 +2,29 @@ module Example.TestData where
 
 import Prelude
 import Data.Array                           (replicate)
+import Data.Generic.Rep.Show                (genericShow)
 import Data.Maybe                           (Maybe(..))
 
-import Halogen.Media.Data.Image             (Image(..), ImageArray)
-import Halogen.Media.Data.Video             (Video(..), VideoArray)
-import Halogen.Media.Data.Base              (Media(..), MediaArray)
+import Halogen.Media.Data.Media             (Media(..)
+                                            ,MediaArray)
+
+newtype Image = Image
+  { id        :: Int
+  , src       :: String
+  , thumbnail :: Maybe String
+  , name      :: String
+  }
+
+type ImageArray = Array Image
+
+newtype Video = Video
+  { id  :: Int
+  , src :: String
+  , thumbnail :: Maybe String
+  , title :: Maybe String
+  }
+
+type VideoArray = Array Video
 
 -- | Generates n amount of fake images
 --   src and thumbnail are set to dynamic urls
@@ -45,10 +63,10 @@ videos n
     src = "https://picsum.photos/600/400/"
     thumbnail = Just "https://picsum.photos/150/150/"
 
+type Img = ( id :: Int, name :: String )
+
 -- | Generates n amount of videos 
-medias :: Int -> MediaArray
-medias n = mediaImages <> mediaVideos
+medias :: Int -> MediaArray Img
+medias n = mediaImages
   where
-    mediaImages = map (\x -> MediaImage x) $ images amount
-    mediaVideos = map (\x -> MediaVideo x) $ videos amount
-    amount = n / 2
+    mediaImages = map (\(Image x) -> Media x) $ images n

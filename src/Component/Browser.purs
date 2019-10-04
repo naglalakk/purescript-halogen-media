@@ -17,7 +17,7 @@ import Halogen.HTML.Properties              as HP
 import Web.File.FileList                    as FL
 import Web.File.File                        as File
 
-import Halogen.Media.Data.Base              (Media(..)
+import Halogen.Media.Data.Media             (Media(..)
                                             ,MediaArray)
 import Halogen.Media.Component.MediaDisplay as MediaDisplay
 import Halogen.Media.Component.Upload       as Upload
@@ -35,38 +35,39 @@ derive instance ordTab :: Ord Tab
 instance showTab :: Show Tab where
   show = genericShow
 
-type State =
-  { media:: MediaArray
+type State r =
+  { media :: MediaArray r
   , selectedTab :: Tab
   }
 
-type Input =
-  { media :: MediaArray
+type Input r =
+  { media :: MediaArray r
   , selectedTab :: Maybe Tab
   }
 
-data Output
-  = Clicked Media
+data Output r
+  = Clicked (Media r)
   | Upload  (Array Upload.ExtendedFile)
   | Dropped (Array Upload.ExtendedFile)
   | TabSwitch Tab
 
 type Query = Const Void
 
-data Action
-  = MDOutput MediaDisplay.Output
+data Action r
+  = MDOutput (MediaDisplay.Output r)
   | ULOutput Upload.Output
   | SwitchTab Tab
-  | Receive Input
+  | Receive (Input r)
 
-type ChildSlots = (
-  mediaDisplay :: H.Slot Query MediaDisplay.Output Unit,
+type ChildSlots r = (
+  mediaDisplay :: H.Slot Query (MediaDisplay.Output r) Unit,
   upload :: H.Slot Query Upload.Output Unit
 )
 
-derive instance genericOutput :: Generic Output _
+-- derive instance genericOutput :: Generic Output _
 -- derive instance eqOutput :: Eq Output
 
+{--
 instance showOutput :: Show Output where
   show (Clicked media) = show media
   show (Dropped files) =
@@ -76,11 +77,12 @@ instance showOutput :: Show Output where
     show $
       map (\(Upload.ExtendedFile f uuid thumb) -> File.name f) files
   show (TabSwitch tab) = show tab
+--}
 
-component :: forall m
+component :: forall m r
            . MonadEffect m
           => MonadAff m
-          => H.Component HH.HTML Query Input Output m
+          => H.Component HH.HTML Query (Input r) (Output r) m
 component =
   H.mkComponent
   { initialState: initialState
@@ -91,7 +93,7 @@ component =
     }
   }
   where
-  initialState :: Input -> State
+  initialState :: Input r -> State r
   initialState input =
     { media: input.media
     , selectedTab: fromMaybe DisplayTab input.selectedTab
@@ -109,7 +111,7 @@ component =
       H.raise $ TabSwitch tab
     Receive inp -> H.put inp { selectedTab = fromMaybe DisplayTab inp.selectedTab }
 
-  render :: State -> H.ComponentHTML Action ChildSlots m
+  render :: (State r) -> H.ComponentHTML (Action r) (ChildSlots r) m
   render state =
     HH.div
       [ css "media-browser" ]

@@ -7,18 +7,18 @@ You can edit this file as you like.
 , name =
     "my-project"
 , dependencies =
-    [ "effect"
+    [ "argonaut"
     , "console"
-    , "psci-support"
-    , "halogen"
-    , "generics-rep"
-    , "argonaut"
-    , "foreign-generic"
     , "const"
-    , "web-file"
-    , "web-events"
     , "dom-filereader"
+    , "effect"
+    , "foreign-generic"
+    , "generics-rep"
+    , "halogen"
+    , "psci-support"
     , "uuid"
+    , "web-events"
+    , "web-file"
     ]
 , packages =
     ./packages.dhall

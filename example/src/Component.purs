@@ -13,22 +13,23 @@ import Halogen.HTML.Properties              as HP
 import Data.Symbol                          (SProxy(..))
 
 import Halogen.Media.Component.Browser      as Browser
-import Halogen.Media.Data.Base              (MediaArray)
-import Example.TestData                     (medias)
+import Halogen.Media.Data.Media             (MediaArray
+                                            ,Media(..))
+import Example.TestData                     (Img, medias)
 
 type State = 
-  { media :: MediaArray
+  { media :: MediaArray Img
   }
 
-data Action 
-  = HandleBrowserAction Browser.Output
+data Action
+  = HandleBrowserAction (Browser.Output Img)
 
 type Input = Unit
 
 type Query = Const Void
 
 type ChildSlots = (
-  mediaBrowser :: H.Slot Query Browser.Output Unit
+  mediaBrowser :: H.Slot Query (Browser.Output Img) Unit
 )
 
 component :: forall m
@@ -50,8 +51,9 @@ component =
     }
 
   handleAction = case _ of
-    HandleBrowserAction act -> 
-      logShow act
+    HandleBrowserAction (Browser.Clicked (Media output)) -> 
+      logShow output
+    _ -> logShow "else"
 
   render :: State -> H.ComponentHTML Action ChildSlots m 
   render state =

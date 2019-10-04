@@ -11,37 +11,30 @@ import Halogen.HTML                         as HH
 import Halogen.HTML.Events                  as HE
 import Halogen.HTML.Properties              as HP
 
-import Halogen.Media.Data.Base              (MediaArray
+import Halogen.Media.Data.Media             (MediaArray
                                             ,Media(..))
-import Halogen.Media.Data.Image             (Image(..))
-import Halogen.Media.Data.Video             (Video(..))
 import Halogen.Media.Component.HTML.Utils   (css)
 
-type State =
-  { media :: MediaArray
+type State r =
+  { media :: MediaArray r
   }
 
-type Input =
-  { media :: MediaArray
+type Input r =
+  { media :: MediaArray r
   }
 
 type ChildSlots = ()
 type Query = Const Void
 
-data Action
-  = ClickMedia Media
-  | Receive Input
+data Action r
+  = ClickMedia (Media r)
+  | Receive (Input r)
 
-data Output
-  = ClickedMedia Media
+data Output r
+  = ClickedMedia (Media r)
 
-derive instance genericOutput :: Generic Output _
-derive instance eqOutput :: Eq Output
-
-instance showOutput :: Show Output where
-  show = genericShow
-
-component :: forall m. H.Component HH.HTML Query Input Output m
+component :: forall m r
+           . H.Component HH.HTML Query (Input r) (Output r) m
 component =
   H.mkComponent
   { initialState: initialState
@@ -52,7 +45,7 @@ component =
     }
   }
   where
-  initialState :: Input -> State
+  initialState :: Input r -> State r
   initialState { media } =
     { media: media
     }
@@ -61,27 +54,19 @@ component =
     (ClickMedia media) -> H.raise $ ClickedMedia media
     Receive input -> H.put input
 
-  renderMedia media =
+  renderMedia (Media media) =
     HH.a
       [ css "media-item"
-      , HE.onClick $ \_ -> Just $ ClickMedia media
+      , HE.onClick $ \_ -> Just $ ClickMedia (Media media)
       ]
-      [ case media of
-        (MediaImage (Image img)) ->
-          HH.div
-            [ css "thumbnail" ]
-            [ HH.img
-              [ HP.src img.src ]
-            ]
-        (MediaVideo (Video video)) ->
-          HH.div
-            [ css "thumbnail" ]
-            [ HH.img
-              [ HP.src video.src ]
-            ]
+      [ HH.div
+        [ css "thumbnail" ]
+        [ HH.img
+          [ HP.src media.src ]
+        ]
       ]
 
-  render :: State -> H.ComponentHTML Action ChildSlots m
+  render :: (State r) -> H.ComponentHTML (Action r) ChildSlots m
   render state =
     HH.div
       [ css "media" ]
