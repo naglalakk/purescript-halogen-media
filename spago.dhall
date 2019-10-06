@@ -19,6 +19,7 @@ You can edit this file as you like.
     , "uuid"
     , "web-events"
     , "web-file"
+    , "web-xhr"
     ]
 , packages =
     ./packages.dhall

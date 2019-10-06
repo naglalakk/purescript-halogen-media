@@ -19,6 +19,8 @@ import Web.File.File                        as File
 
 import Halogen.Media.Data.Media             (Media(..)
                                             ,MediaArray)
+import Halogen.Media.Data.File              (ExtendedFile(..)
+                                            ,ExtendedFileArray)
 import Halogen.Media.Component.MediaDisplay as MediaDisplay
 import Halogen.Media.Component.Upload       as Upload
 import Halogen.Media.Component.HTML.Utils   (css)
@@ -47,8 +49,8 @@ type Input r =
 
 data Output r
   = Clicked (Media r)
-  | Upload  (Array Upload.ExtendedFile)
-  | Dropped (Array Upload.ExtendedFile)
+  | Upload  ExtendedFileArray
+  | Dropped ExtendedFileArray
   | TabSwitch Tab
 
 type Query = Const Void
