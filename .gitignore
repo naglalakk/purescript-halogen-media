@@ -17,3 +17,5 @@ dist/
 yarn-error.log
 
 .atom-build.yml
+
+dist/

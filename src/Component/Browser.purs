@@ -74,10 +74,10 @@ instance showOutput :: Show Output where
   show (Clicked media) = show media
   show (Dropped files) =
     show $
-      map (\(Upload.ExtendedFile f uuid thumb) -> File.name f) files
+      map (\(ExtendedFile f uuid thumb) -> File.name f) files
   show (Upload  files) =
     show $
-      map (\(Upload.ExtendedFile f uuid thumb) -> File.name f) files
+      map (\(ExtendedFile f uuid thumb) -> File.name f) files
   show (TabSwitch tab) = show tab
 --}
 

@@ -5,16 +5,19 @@ You can edit this file as you like.
 { sources =
     [ "src/**/*.purs", "test/**/*.purs" ]
 , name =
-    "my-project"
+    "halogen-media-library"
 , dependencies =
     [ "argonaut"
     , "console"
     , "const"
+    , "css"
     , "dom-filereader"
     , "effect"
     , "foreign-generic"
     , "generics-rep"
     , "halogen"
+    , "halogen-css"
+    , "generics-rep"
     , "psci-support"
     , "uuid"
     , "web-events"
