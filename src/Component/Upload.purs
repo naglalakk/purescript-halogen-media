@@ -50,7 +50,6 @@ import Halogen.Media.Data.File              (ExtendedFile(..)
 import Halogen.Media.Component.HTML.Utils   (css)
 import Halogen.Media.Utils                  (fileListToFiles)
 
-
 type State =
   { files :: ExtendedFileArray
   , reader :: Maybe FileReader.FileReader
