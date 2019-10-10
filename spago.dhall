@@ -8,9 +8,11 @@ You can edit this file as you like.
     "my-project"
 , dependencies =
     [ "effect"
+    , "css"
     , "console"
     , "psci-support"
     , "halogen"
+    , "halogen-css"
     , "generics-rep"
     , "argonaut"
     , "foreign-generic"

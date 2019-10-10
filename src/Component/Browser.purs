@@ -19,6 +19,8 @@ import Web.File.File                        as File
 
 import Halogen.Media.Data.Base              (Media(..)
                                             ,MediaArray)
+import Halogen.Media.Data.File              (ExtendedFile(..)
+                                            ,ExtendedFileArray)
 import Halogen.Media.Component.MediaDisplay as MediaDisplay
 import Halogen.Media.Component.Upload       as Upload
 import Halogen.Media.Component.HTML.Utils   (css)
@@ -47,8 +49,8 @@ type Input =
 
 data Output
   = Clicked Media
-  | Upload  (Array Upload.ExtendedFile)
-  | Dropped (Array Upload.ExtendedFile)
+  | Upload  ExtendedFileArray
+  | Dropped ExtendedFileArray
   | TabSwitch Tab
 
 type Query = Const Void
@@ -71,10 +73,10 @@ instance showOutput :: Show Output where
   show (Clicked media) = show media
   show (Dropped files) =
     show $
-      map (\(Upload.ExtendedFile f uuid thumb) -> File.name f) files
+      map (\(ExtendedFile f uuid thumb) -> File.name f) files
   show (Upload  files) =
     show $
-      map (\(Upload.ExtendedFile f uuid thumb) -> File.name f) files
+      map (\(ExtendedFile f uuid thumb) -> File.name f) files
   show (TabSwitch tab) = show tab
 
 component :: forall m

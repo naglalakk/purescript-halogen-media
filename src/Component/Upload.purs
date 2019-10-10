@@ -23,6 +23,8 @@ import Data.Maybe                           (Maybe(..)
 import Data.Generic.Rep                     (class Generic)
 import Data.Generic.Rep.Show                (genericShow)
 import Data.Traversable                     (traverse)
+import Data.UUID                            (UUID(..)
+                                            ,genUUID)
 import Foreign                              (Foreign
                                             ,readString)
 import Halogen                              as H
@@ -43,25 +45,20 @@ import Web.File.FileReader                  as FileReader
 import Web.HTML.Event.DragEvent             as DE
 import Web.HTML.Event.DataTransfer          as DT
 
+import Halogen.Media.Data.File              (ExtendedFile(..)
+                                            ,ExtendedFileArray)
 import Halogen.Media.Component.HTML.Utils   (css)
 import Halogen.Media.Utils                  (fileListToFiles)
-import Data.UUID                            (UUID(..)
-                                            ,genUUID)
 
--- | Extended file contains a unique UUID
--- for identification and a (Maybe String)
--- that represents the thumbnail of the file
-data ExtendedFile
-  = ExtendedFile File.File UUID (Maybe String)
 
 type State =
-  { files :: Array ExtendedFile
+  { files :: ExtendedFileArray
   , reader :: Maybe FileReader.FileReader
   }
 
 data Output
-  = DroppedFiles (Array ExtendedFile)
-  | UploadFiles  (Array ExtendedFile)
+  = DroppedFiles ExtendedFileArray
+  | UploadFiles  ExtendedFileArray
 
 type Input = Unit
 
