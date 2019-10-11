@@ -10,6 +10,8 @@ import Data.Array                           (filter
 import Data.Const                           (Const)
 import Data.Maybe                           (Maybe(..)
                                             ,fromMaybe)
+import Data.Eq                              (class EqRecord)
+import Data.Show                            (class ShowRecordFields)
 import Data.Generic.Rep                     (class Generic)
 import Data.Generic.Rep.Show                (genericShow)
 import Data.Traversable                     (traverse)
@@ -22,8 +24,6 @@ import Halogen.HTML                         as HH
 import Halogen.HTML.Events                  as HE
 import Halogen.HTML.Properties              as HP
 import Prim.RowList                         as RL
-import Data.Eq                              (class EqRecord)
-import Data.Show                            (class ShowRecordFields)
 
 import Halogen.Media.Data.Media             (MediaArray
                                             ,Media(..)
@@ -116,10 +116,7 @@ component =
 
   renderMedia (UIMedia (Media media) selected uuid) =
     HH.a
-      [ css "media-item"
-      , case selected of
-          true -> HCSS.style do (CSS.backgroundColor $ CSS.rgb 105 210 231)
-          false -> HCSS.style do (CSS.backgroundColor $ CSS.rgb 255 255 255)
+      [ css $ "media-item selected-" <> show selected
       , HE.onClick $ \_ -> Just $ ClickMedia $ UIMedia (Media media) selected uuid
       ]
       [ HH.div
