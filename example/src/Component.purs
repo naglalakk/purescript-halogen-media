@@ -51,7 +51,7 @@ component =
     }
 
   handleAction = case _ of
-    HandleBrowserAction (Browser.Clicked (Media output)) -> 
+    HandleBrowserAction (Browser.Clicked output) -> 
       logShow output
     _ -> logShow "else"
 

@@ -16,6 +16,9 @@ import Halogen.HTML.Events                  as HE
 import Halogen.HTML.Properties              as HP
 import Web.File.FileList                    as FL
 import Web.File.File                        as File
+import Prim.RowList                         as RL
+import Data.Eq                              (class EqRecord)
+import Data.Show                            (class ShowRecordFields)
 
 import Halogen.Media.Data.Media             (Media(..)
                                             ,MediaArray)
@@ -48,7 +51,7 @@ type Input r =
   }
 
 data Output r
-  = Clicked (Media r)
+  = Clicked (MediaArray r)
   | Upload  ExtendedFileArray
   | Dropped ExtendedFileArray
   | TabSwitch Tab
@@ -81,8 +84,11 @@ instance showOutput :: Show Output where
   show (TabSwitch tab) = show tab
 --}
 
-component :: forall m r
-           . MonadEffect m
+component :: forall m r l
+           . RL.RowToList (src :: String, thumbnail :: Maybe String | r) l
+          => EqRecord l ( src :: String, thumbnail :: Maybe String | r)
+          => ShowRecordFields l ( src :: String, thumbnail :: Maybe String | r)
+          => MonadEffect m
           => MonadAff m
           => H.Component HH.HTML Query (Input r) (Output r) m
 component =
@@ -102,7 +108,7 @@ component =
     }
 
   handleAction = case _ of
-    (MDOutput (MediaDisplay.ClickedMedia media)) ->
+    (MDOutput (MediaDisplay.ClickedMedia media)) -> do
       H.raise $ Clicked media
     (ULOutput (Upload.UploadFiles files)) ->
       H.raise $ Upload files
