@@ -69,21 +69,6 @@ type ChildSlots r = (
   upload :: H.Slot Query Upload.Output Unit
 )
 
--- derive instance genericOutput :: Generic Output _
--- derive instance eqOutput :: Eq Output
-
-{--
-instance showOutput :: Show Output where
-  show (Clicked media) = show media
-  show (Dropped files) =
-    show $
-      map (\(ExtendedFile f uuid thumb) -> File.name f) files
-  show (Upload  files) =
-    show $
-      map (\(ExtendedFile f uuid thumb) -> File.name f) files
-  show (TabSwitch tab) = show tab
---}
-
 component :: forall m r l
            . RL.RowToList (src :: String, thumbnail :: Maybe String | r) l
           => EqRecord l ( src :: String, thumbnail :: Maybe String | r)

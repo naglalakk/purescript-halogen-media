@@ -22,7 +22,8 @@ type State =
   }
 
 data Action
-  = HandleBrowserAction (Browser.Output Img)
+  = Initialize
+  | HandleBrowserAction (Browser.Output Img)
 
 type Input = Unit
 
@@ -42,18 +43,32 @@ component =
   , render
   , eval: H.mkEval H.defaultEval
     { handleAction = handleAction
+    , initialize = Just Initialize
     }
   }
   where
   initialState :: State
   initialState = 
-    { media: medias 20
+    { media: []
     }
 
   handleAction = case _ of
-    HandleBrowserAction (Browser.Clicked output) -> 
+    Initialize -> do
+      images <- H.liftEffect $ medias 20
+      H.modify_ _ { media = images }
+
+    HandleBrowserAction (Browser.Clicked output) -> do
+      logShow "Clicked images:"
       logShow output
-    _ -> logShow "else"
+
+    HandleBrowserAction (Browser.Upload files) -> 
+      logShow "Hey you just clicked the upload button, good job!"
+
+    HandleBrowserAction (Browser.Dropped files) ->
+      logShow "You dropped a file into the upload area"
+
+    HandleBrowserAction (Browser.TabSwitch tab) ->
+      logShow $ "You just changed to tab: " <> (show tab)
 
   render :: State -> H.ComponentHTML Action ChildSlots m 
   render state =
