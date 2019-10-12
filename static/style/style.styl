@@ -20,12 +20,18 @@ body > div
   padding-left separator
 
 .media-item
-  padding separator
+  padding 12.5px
+  margin-left 12.5px
+  margin-bottom 12.5px
 
+.thumbnail
+  max-width 300px
+  img
+    width 100%
 
 .tabs
   display flex
-  padding-left separator
+  padding-left separator * 2
   padding-right separator
   padding-top separator
 
@@ -49,8 +55,8 @@ body > div
 .upload-container
   position relative
   margin-top separator
-  margin-left separator
-  margin-right separator
+  margin-left separator * 2
+  margin-right separator * 2
 
 .dropbox
   overflow-y scroll
@@ -106,3 +112,8 @@ body > div
     background-color #000
     color #fff
 
+.selected-true
+  background-color rgb(105, 210, 231)
+
+.selected-false
+  background-color rgb(255, 255, 255)

@@ -48,7 +48,10 @@ import Web.HTML.Event.DataTransfer          as DT
 import Halogen.Media.Data.File              (ExtendedFile(..)
                                             ,ExtendedFileArray)
 import Halogen.Media.Component.HTML.Utils   (css)
+import Halogen.Media.Data.File              (ExtendedFile(..)
+                                            ,ExtendedFileArray)
 import Halogen.Media.Utils                  (fileListToFiles)
+
 
 type State =
   { files :: ExtendedFileArray

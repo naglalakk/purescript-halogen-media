@@ -13,22 +13,24 @@ import Halogen.HTML.Properties              as HP
 import Data.Symbol                          (SProxy(..))
 
 import Halogen.Media.Component.Browser      as Browser
-import Halogen.Media.Data.Base              (MediaArray)
-import Example.TestData                     (medias)
+import Halogen.Media.Data.Media             (MediaArray
+                                            ,Media(..))
+import Example.TestData                     (Img, medias)
 
 type State = 
-  { media :: MediaArray
+  { media :: MediaArray Img
   }
 
-data Action 
-  = HandleBrowserAction Browser.Output
+data Action
+  = Initialize
+  | HandleBrowserAction (Browser.Output Img)
 
 type Input = Unit
 
 type Query = Const Void
 
 type ChildSlots = (
-  mediaBrowser :: H.Slot Query Browser.Output Unit
+  mediaBrowser :: H.Slot Query (Browser.Output Img) Unit
 )
 
 component :: forall m
@@ -41,17 +43,32 @@ component =
   , render
   , eval: H.mkEval H.defaultEval
     { handleAction = handleAction
+    , initialize = Just Initialize
     }
   }
   where
   initialState :: State
   initialState = 
-    { media: medias 20
+    { media: []
     }
 
   handleAction = case _ of
-    HandleBrowserAction act -> 
-      logShow act
+    Initialize -> do
+      images <- H.liftEffect $ medias 20
+      H.modify_ _ { media = images }
+
+    HandleBrowserAction (Browser.Clicked output) -> do
+      logShow "Clicked images:"
+      logShow output
+
+    HandleBrowserAction (Browser.Upload files) -> 
+      logShow "Hey you just clicked the upload button, good job!"
+
+    HandleBrowserAction (Browser.Dropped files) ->
+      logShow "You dropped a file into the upload area"
+
+    HandleBrowserAction (Browser.TabSwitch tab) ->
+      logShow $ "You just changed to tab: " <> (show tab)
 
   render :: State -> H.ComponentHTML Action ChildSlots m 
   render state =

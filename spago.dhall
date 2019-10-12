@@ -5,22 +5,24 @@ You can edit this file as you like.
 { sources =
     [ "src/**/*.purs", "test/**/*.purs" ]
 , name =
-    "my-project"
+    "halogen-media-library"
 , dependencies =
-    [ "effect"
-    , "css"
+    [ "argonaut"
     , "console"
-    , "psci-support"
+    , "const"
+    , "css"
+    , "dom-filereader"
+    , "effect"
+    , "foreign-generic"
+    , "generics-rep"
     , "halogen"
     , "halogen-css"
     , "generics-rep"
-    , "argonaut"
-    , "foreign-generic"
-    , "const"
-    , "web-file"
-    , "web-events"
-    , "dom-filereader"
+    , "psci-support"
     , "uuid"
+    , "web-events"
+    , "web-file"
+    , "web-xhr"
     ]
 , packages =
     ./packages.dhall

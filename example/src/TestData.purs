@@ -1,31 +1,70 @@
 module Example.TestData where
 
 import Prelude
-import Data.Array                           (replicate)
+import Effect                               (Effect(..))
+import Effect.Class.Console                 (logShow)
+import Data.Array                           (fromFoldable
+                                            ,replicate)
+import Data.Foldable                        (class Foldable)
+import Data.Generic.Rep                     (class Generic)
+import Data.Generic.Rep.Show                (genericShow)
+import Data.List.Lazy                       (toUnfoldable
+                                            ,replicateM)
+import Data.List                            (List(..))
+import Data.Generic.Rep.Show                (genericShow)
 import Data.Maybe                           (Maybe(..))
+import Data.Traversable                     (traverse)
+import Data.UUID                            (genUUID)
 
-import Halogen.Media.Data.Image             (Image(..), ImageArray)
-import Halogen.Media.Data.Video             (Video(..), VideoArray)
-import Halogen.Media.Data.Base              (Media(..), MediaArray)
+import Halogen.Media.Data.Media             (Media(..)
+                                            ,MediaArray)
+
+type Img = (
+    id :: Int
+  , name :: String 
+)
+
+
+newtype Image = Image
+  { id        :: Int
+  , src       :: String
+  , thumbnail :: Maybe String
+  , name      :: String
+  }
+
+type ImageArray = Array Image
+
+newtype Video = Video
+  { id  :: Int
+  , src :: String
+  , thumbnail :: Maybe String
+  , title :: Maybe String
+  }
+
+type VideoArray = Array Video
 
 -- | Generates n amount of fake images
 --   src and thumbnail are set to dynamic urls
 --   that should load different images for each
 --   seperate object
-images :: Int -> ImageArray
-images n 
-  = replicate n 
-  $ Image 
-    { id: _id
-    , src: src
-    , thumbnail: thumbnail
-    , name: name 
-    }
+images :: Int -> Effect ImageArray
+images n = do
+  l <- replicateM n $ do
+    randomS <- genUUID
+    let 
+      src = "https://picsum.photos/600/400?v=" <> (show randomS)
+      thumbnail = Just $ "https://picsum.photos/150/150?v=" <> (show randomS)
+    pure $ Image 
+      { id: _id
+      , src: src
+      , thumbnail: thumbnail
+      , name: name 
+      }
+  pure ((fromFoldable (toUnfoldable l :: List Image)) :: ImageArray)
+
   where
     _id = 0
     name = "testpic.jpg"
-    src = "https://picsum.photos/600/400/"
-    thumbnail = Just "https://picsum.photos/150/150/"
 
 
 -- | Generates n amount of fake videos
@@ -45,10 +84,11 @@ videos n
     src = "https://picsum.photos/600/400/"
     thumbnail = Just "https://picsum.photos/150/150/"
 
--- | Generates n amount of videos 
-medias :: Int -> MediaArray
-medias n = mediaImages <> mediaVideos
-  where
-    mediaImages = map (\x -> MediaImage x) $ images amount
-    mediaVideos = map (\x -> MediaVideo x) $ videos amount
-    amount = n / 2
+
+-- | Generates n amount of images
+--   wrapped in a Media type
+medias :: Int -> Effect (MediaArray Img)
+medias n = do
+  imgs <- images n
+  let mediaImages = map (\(Image x) -> Media x) imgs
+  pure mediaImages
