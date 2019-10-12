@@ -7,6 +7,8 @@ import Data.Eq                  (class EqRecord)
 import Data.Show                (class ShowRecordFields)
 import Prim.RowList             as RL
 
+type MediaRow = ( src :: String, thumbnail :: Maybe String )
+
 -- | Media represents a basic media datatype
 --   used througout the library.
 --   Media is a polymorphic type where
