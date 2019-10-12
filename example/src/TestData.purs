@@ -2,9 +2,12 @@ module Example.TestData where
 
 import Prelude
 import Effect                               (Effect(..))
+import Effect.Class.Console                 (logShow)
 import Data.Array                           (fromFoldable
                                             ,replicate)
 import Data.Foldable                        (class Foldable)
+import Data.Generic.Rep                     (class Generic)
+import Data.Generic.Rep.Show                (genericShow)
 import Data.List.Lazy                       (toUnfoldable
                                             ,replicateM)
 import Data.List                            (List(..))
@@ -15,6 +18,12 @@ import Data.UUID                            (genUUID)
 
 import Halogen.Media.Data.Media             (Media(..)
                                             ,MediaArray)
+
+type Img = (
+    id :: Int
+  , name :: String 
+)
+
 
 newtype Image = Image
   { id        :: Int
@@ -75,8 +84,6 @@ videos n
     src = "https://picsum.photos/600/400/"
     thumbnail = Just "https://picsum.photos/150/150/"
 
-type Img = ( id :: Int, name :: String )
-type Vid = ( id :: Int, title :: String)
 
 -- | Generates n amount of images
 --   wrapped in a Media type

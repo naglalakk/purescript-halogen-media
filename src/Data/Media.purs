@@ -9,8 +9,9 @@ import Prim.RowList             as RL
 
 -- | Media represents a basic media datatype
 --   used througout the library.
---   Media is polymorphic over r where r is
---   any other record field 
+--   Media is a polymorphic type where
+--   src and thumbnail are required 
+--   and other types of the Record (| r) are ignored
 newtype Media r = Media 
   { src       :: String
   , thumbnail :: Maybe String 
