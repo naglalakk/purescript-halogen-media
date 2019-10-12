@@ -25,11 +25,10 @@ type Img = (
 )
 
 
-newtype Image = Image
-  { id        :: Int
-  , src       :: String
+newtype Image = Image 
+  { src :: String
   , thumbnail :: Maybe String
-  , name      :: String
+  | Img
   }
 
 type ImageArray = Array Image
