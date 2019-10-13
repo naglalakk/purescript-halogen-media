@@ -42,6 +42,7 @@ instance showTab :: Show Tab where
 
 type State r =
   { media :: MediaArray r
+  , selectedMedia :: MediaArray r
   , selectedTab :: Tab
   }
 
@@ -54,6 +55,7 @@ data Output r
   = Clicked (MediaArray r)
   | Upload  ExtendedFileArray
   | Dropped ExtendedFileArray
+  | InsertedMedia (MediaArray r)
   | TabSwitch Tab
 
 type Query = Const Void
@@ -62,6 +64,7 @@ data Action r
   = MDOutput (MediaDisplay.Output r)
   | ULOutput Upload.Output
   | SwitchTab Tab
+  | InsertMedia
   | Receive (Input r)
 
 type ChildSlots r = (
@@ -90,10 +93,14 @@ component =
   initialState input =
     { media: input.media
     , selectedTab: fromMaybe DisplayTab input.selectedTab
+    , selectedMedia: []
     }
 
   handleAction = case _ of
     (MDOutput (MediaDisplay.ClickedMedia media)) -> do
+      logShow media
+      H.modify_ _ { selectedMedia = media }
+      logShow "got blunt?"
       H.raise $ Clicked media
     (ULOutput (Upload.UploadFiles files)) ->
       H.raise $ Upload files
@@ -102,7 +109,15 @@ component =
     SwitchTab tab -> do
       H.modify_ _ { selectedTab = tab }
       H.raise $ TabSwitch tab
-    Receive inp -> H.put inp { selectedTab = fromMaybe DisplayTab inp.selectedTab }
+    InsertMedia -> do
+      state <- H.get
+      H.raise $ InsertedMedia state.selectedMedia
+    Receive inp -> do
+      logShow "input"
+      logShow inp
+      H.modify_ _ { selectedTab = fromMaybe DisplayTab inp.selectedTab 
+                  , media = inp.media
+                  }
 
   render :: (State r) -> H.ComponentHTML (Action r) (ChildSlots r) m
   render state =
@@ -120,6 +135,11 @@ component =
           , HE.onClick $ \e -> Just $ SwitchTab UploadTab
           ]
           [ HH.text "Upload" ]
+        , HH.div
+          [ css "tab insert-tab" 
+          , HE.onClick $ \e -> Just InsertMedia
+          ]
+          [ HH.text "Insert" ]
         ]
       , case (state.selectedTab) of
           DisplayTab ->

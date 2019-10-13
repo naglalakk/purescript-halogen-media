@@ -94,6 +94,8 @@ component =
         sel = not selected
         newMedia = UIMedia (Media media) sel uuid
         elemIx = elemIndex (UIMedia (Media media) selected uuid) state.media
+      logShow sel
+      logShow uuid
       case elemIx of
         Just ix -> do
           let arr = updateAt ix newMedia state.media
@@ -109,10 +111,16 @@ component =
         Nothing -> pure unit
 
     Receive input -> do
-      newMedias <- traverse (\media-> do
-        uuidNew <- H.liftEffect $ genUUID
-        pure $ UIMedia media false (Just uuidNew)) input.media
-      H.modify_ _ { media = newMedias }
+      state <- H.get
+      let 
+        currMedia = map (\(UIMedia (Media media) s u) -> (Media media)) state.media
+      case currMedia == input.media of
+        true -> pure unit
+        false -> do
+          newMedias <- traverse (\media-> do
+            uuidNew <- H.liftEffect $ genUUID
+            pure $ UIMedia media false (Just uuidNew)) input.media
+          H.modify_ _ { media = newMedias }
 
   renderMedia (UIMedia (Media media) selected uuid) =
     HH.a

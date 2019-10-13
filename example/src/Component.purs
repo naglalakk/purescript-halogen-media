@@ -61,6 +61,10 @@ component =
       logShow "Clicked images:"
       logShow output
 
+    HandleBrowserAction (Browser.InsertedMedia media) -> do
+      logShow "You inserted some media collected from the media items you clicked"
+      logShow media
+
     HandleBrowserAction (Browser.Upload files) -> 
       logShow "Hey you just clicked the upload button, good job!"
 
