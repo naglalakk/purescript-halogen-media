@@ -100,7 +100,6 @@ component =
     (MDOutput (MediaDisplay.ClickedMedia media)) -> do
       logShow media
       H.modify_ _ { selectedMedia = media }
-      logShow "got blunt?"
       H.raise $ Clicked media
     (ULOutput (Upload.UploadFiles files)) ->
       H.raise $ Upload files
