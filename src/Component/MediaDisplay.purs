@@ -44,20 +44,12 @@ type Query = Const Void
 data Action r
   = Initialize
   | ClickMedia (UIMedia r)
+  | RemoveMedia (UIMedia r)
   | Receive (Input r)
 
 data Output r
   = ClickedMedia (MediaArray r)
-
-{--
-derive instance genericOutput :: Generic Output _
-derive instance eqOutput :: Eq Output
---}
-
-{--
-instance showOutput :: Show Output where
-  show = genericShow
---}
+  | RemovedMedia (Media r)
 
 component :: forall m r l
            . RL.RowToList (src :: String, thumbnail :: Maybe String | r) l
@@ -94,12 +86,9 @@ component =
         sel = not selected
         newMedia = UIMedia (Media media) sel uuid
         elemIx = elemIndex (UIMedia (Media media) selected uuid) state.media
-      logShow sel
-      logShow uuid
       case elemIx of
         Just ix -> do
           let arr = updateAt ix newMedia state.media
-          logShow ix
           case arr of 
             Just nm -> do
               let
@@ -109,6 +98,12 @@ component =
               H.raise $ ClickedMedia allClickedMedia
             Nothing -> pure unit
         Nothing -> pure unit
+    (RemoveMedia (UIMedia (Media media) selected uuid)) -> do
+      state <- H.get
+      let 
+        newMedia = filter (\(UIMedia (Media m) s u) -> u /= uuid) state.media
+      H.modify_ _ { media = newMedia }
+      H.raise $ RemovedMedia $ Media media
 
     Receive input -> do
       state <- H.get
@@ -125,11 +120,20 @@ component =
   renderMedia (UIMedia (Media media) selected uuid) =
     HH.a
       [ css $ "media-item selected-" <> show selected
-      , HE.onClick $ \_ -> Just $ ClickMedia $ UIMedia (Media media) selected uuid
+      , HE.onClick \_ -> Just $ ClickMedia $ UIMedia (Media media) selected uuid
       ]
       [ HH.div
         [ css "thumbnail" ]
-        [ HH.img
+        [ HH.div
+          [ css "thumbnail-overlay" ]
+          [ HH.div
+            [ css "thumbnail-remove" 
+            , HE.onClick \_ -> Just $ RemoveMedia $ UIMedia (Media media) selected uuid
+            ]
+            [ HH.text "X"
+            ]
+          ]
+        , HH.img
           [ HP.src media.src ]
         ]
       ]

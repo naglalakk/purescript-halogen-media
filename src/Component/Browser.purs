@@ -53,6 +53,7 @@ type Input r =
 
 data Output r
   = Clicked (MediaArray r)
+  | Removed (Media r)
   | Upload  ExtendedFileArray
   | Dropped ExtendedFileArray
   | InsertedMedia (MediaArray r)
@@ -98,9 +99,10 @@ component =
 
   handleAction = case _ of
     (MDOutput (MediaDisplay.ClickedMedia media)) -> do
-      logShow media
       H.modify_ _ { selectedMedia = media }
       H.raise $ Clicked media
+    (MDOutput (MediaDisplay.RemovedMedia media)) ->
+      H.raise $ Removed media
     (ULOutput (Upload.UploadFiles files)) ->
       H.raise $ Upload files
     (ULOutput (Upload.DroppedFiles files)) ->

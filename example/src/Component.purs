@@ -60,6 +60,9 @@ component =
     HandleBrowserAction (Browser.Clicked output) -> do
       logShow "Clicked images:"
       logShow output
+    
+    HandleBrowserAction (Browser.Removed output) -> do
+      logShow "You just removed a image"
 
     HandleBrowserAction (Browser.InsertedMedia media) -> do
       logShow "You inserted some media collected from the media items you clicked"
