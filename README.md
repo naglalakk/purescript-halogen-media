@@ -1,5 +1,8 @@
-purescript-halogen-media-library
+purescript-halogen-media
 ===========================
+
+**WORK IN PROGRESS**
+----------------
 
 A media library | browser | uploader | manager to use with [purescript-halogen](https://github.com/slamdata/purescript-halogen).
 
