@@ -133,8 +133,9 @@ component =
             [ HH.text "X"
             ]
           ]
-        , HH.img
-          [ HP.src media.src ]
+        , case media.thumbnail of
+          Just thumb -> HH.img [ HP.src thumb ]
+          Nothing    -> HH.img [ HP.src media.src ]
         ]
       ]
 
