@@ -30,6 +30,7 @@ import Foreign                              (Foreign
 import Halogen                              as H
 import Halogen.Aff                          as HA
 import Halogen.HTML                         as HH
+import Halogen.HTML.CSS                     as HCSS
 import Halogen.HTML.Events                  as HE
 import Halogen.HTML.Properties              as HP
 import Halogen.Query.EventSource            as HES
@@ -48,13 +49,16 @@ import Web.HTML.Event.DataTransfer          as DT
 import Halogen.Media.Data.File              (ExtendedFile(..)
                                             ,ExtendedFileArray)
 import Halogen.Media.Component.HTML.Utils   (css)
+import Halogen.Media.Component.CSS.Upload   as UploadStyle
 import Halogen.Media.Data.File              (ExtendedFile(..)
-                                            ,ExtendedFileArray)
+                                            ,ExtendedFileArray
+                                            ,UploadFile(..)
+                                            ,UploadFileArray)
 import Halogen.Media.Utils                  (fileListToFiles)
 
 
 type State =
-  { files :: ExtendedFileArray
+  { files :: UploadFileArray
   , reader :: Maybe FileReader.FileReader
   }
 
@@ -72,7 +76,12 @@ data Action
   | PreventDefault EV.Event
 
 type ChildSlots = ()
-type Query = Const Void
+
+type UploadStatus =
+  { uuid :: UUID
+  , status :: Boolean
+  }
+data Query a = SetUploadStatus UUID Boolean a
 
 derive instance genericOutput :: Generic Output _
 
@@ -86,12 +95,12 @@ instance showOutput :: Show Output where
 
 
 -- Util function for updating
--- the thumbnail of a Extended file
+-- the thumbnail of a UploadFile
 setThumb :: String
-         -> ExtendedFile
-         -> ExtendedFile
-setThumb thumb (ExtendedFile f u t)
-  = ExtendedFile f u (Just thumb)
+         -> UploadFile
+         -> UploadFile
+setThumb thumb (UploadFile (ExtendedFile f u t) status)
+  = UploadFile (ExtendedFile f u (Just thumb)) status
 
 component :: forall m
            . MonadEffect m
@@ -103,6 +112,7 @@ component =
   , render
   , eval: H.mkEval H.defaultEval
     { handleAction = handleAction
+    , handleQuery  = handleQuery
     , initialize = Just Initialize
     }
   }
@@ -132,6 +142,20 @@ component =
       (FileReader.toEventTarget fileReader)
       fileCallback
 
+  handleQuery :: forall a
+               . Query a 
+              -> H.HalogenM State Action ChildSlots Output m (Maybe a)
+  handleQuery = case _ of
+    (SetUploadStatus uuid status next) -> do
+      state <- H.get
+      let 
+        newArr = map (\(UploadFile (ExtendedFile f u t) s) -> do
+          case u == uuid of
+            true -> UploadFile (ExtendedFile f u t) status
+            false ->   UploadFile (ExtendedFile f u t) s) state.files
+      H.modify_ _ { files = newArr }
+      pure $ Just next
+
   handleAction :: Action -> H.HalogenM State Action ChildSlots Output m Unit
   handleAction = case _ of
     Initialize -> do
@@ -143,7 +167,7 @@ component =
       case thumbnail of
         Right thumb -> do
           state <- H.get
-          let index = findIndex (\(ExtendedFile f u t) -> u == uuid) state.files
+          let index = findIndex (\(UploadFile (ExtendedFile f u t) status) -> u == uuid) state.files
           case index of
             Just ix -> do
               let newArr = modifyAt ix (setThumb thumb) state.files
@@ -177,7 +201,9 @@ component =
         pure $ ExtendedFile x uuid Nothing
       ) droppedFiles
 
-      let allFiles = state.files <> extendedFiles
+      let 
+        uploadFiles = map (\(ExtendedFile file uuid thumb) -> UploadFile (ExtendedFile file uuid thumb) false) extendedFiles
+        allFiles = state.files <> uploadFiles
 
       -- Get thumbnails for files
       H.modify_ _ { files = allFiles }
@@ -188,32 +214,57 @@ component =
 
     SubmitFiles -> do
       state <- H.get
-      H.raise $ UploadFiles state.files
+      let uploadFiles = map (\(UploadFile (ExtendedFile file uuid thumb) status) -> ExtendedFile file uuid thumb) state.files
+      H.raise $ UploadFiles uploadFiles
 
-  renderFile (ExtendedFile file uuid thumb) =
+  renderFile (UploadFile (ExtendedFile file uuid thumb) status) =
     HH.div
-      [ css "upload-file" ]
+      [ css "upload-file" 
+      ]
       [ HH.div
-        [ css "upload-thumbnail" ]
+        [ css "upload-thumbnail" 
+        ]
         [ HH.img
           [ HP.src $ fromMaybe "" thumb ]
         ]
-      , HH.div
-        [ css "upload-info" ]
-        [ HH.div
+      , HH.ul
+        [ css "upload-info" 
+        ]
+        [ HH.li
           [ css "upload-title" ]
-          [ HH.text $ File.name file ]
-        , HH.div
+          [ HH.b
+            []
+            [ HH.text "Name: "]
+          , HH.text $ File.name file 
+          ]
+        , HH.li
           [ css "upload-size" ]
-          [ HH.text $ show $ File.size file ]
+          [ HH.b
+            []
+            [ HH.text "Filesize: "]
+          , HH.text $ show $ File.size file ]
+        , HH.li
+          [ css $ "upload-status upload-" <> show status ]
+          [ HH.div
+            []
+            [ HH.b
+              []
+              [ HH.text "Status: " ]
+            , case status of 
+              true -> HH.text "Completed"
+              false -> HH.text "Pending"
+            ]
+          ]
         ]
       ]
 
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state =
     HH.div
-      [ css "upload-container" ]
-      [ HH.div
+      [ css "upload-container" 
+      ]
+      [ UploadStyle.stylesheet
+      , HH.div
         [ css "dropbox"
         , HE.onDragOver $ \e -> Just $ PreventDefault $ DE.toEvent e
         , HE.onDrop $ \e -> Just $ SetFiles e
@@ -222,15 +273,8 @@ component =
             then HH.text "Drop files here"
             else HH.text ""
         , HH.div
-          [css "uploads" ]
-          (state.files <#> renderFile)
-        ]
-      , HH.div
-        [ css "upload-action" ]
-        [ HH.div
-          [ css "button"
-          , HE.onClick $ \e -> Just SubmitFiles
+          [ css "uploads" 
           ]
-          [ HH.text "Upload" ]
+          (state.files <#> renderFile)
         ]
       ]

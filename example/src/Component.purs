@@ -4,6 +4,7 @@ import Prelude
 import Effect.Class.Console                 (logShow)
 import Effect.Class                         (class MonadEffect)
 import Effect.Aff.Class                     (class MonadAff)
+import Data.Traversable                     (traverse)
 import Data.Const                           (Const)
 import Data.Maybe                           (Maybe(..))
 import Halogen                              as H
@@ -13,6 +14,7 @@ import Halogen.HTML.Properties              as HP
 import Data.Symbol                          (SProxy(..))
 
 import Halogen.Media.Component.Browser      as Browser
+import Halogen.Media.Data.File              (ExtendedFile(..))
 import Halogen.Media.Data.Media             (MediaArray
                                             ,Media(..))
 import Example.TestData                     (Img, medias)
@@ -27,7 +29,7 @@ data Action
 
 type Input = Unit
 
-type Query = Const Void
+type Query = Browser.Query
 
 type ChildSlots = (
   mediaBrowser :: H.Slot Query (Browser.Output Img) Unit
@@ -71,7 +73,9 @@ component =
     HandleBrowserAction (Browser.Upload files) -> 
       logShow "Hey you just clicked the upload button, good job!"
 
-    HandleBrowserAction (Browser.Dropped files) ->
+    HandleBrowserAction (Browser.Dropped files) -> do
+      _ <- traverse (\(ExtendedFile f uuid t) -> do
+        H.query (SProxy :: SProxy "mediaBrowser") unit (H.tell (Browser.SetUploadStatus uuid true))) files
       logShow "You dropped a file into the upload area"
 
     HandleBrowserAction (Browser.TabSwitch tab) ->

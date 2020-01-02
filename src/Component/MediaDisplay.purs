@@ -1,34 +1,35 @@
 module Halogen.Media.Component.MediaDisplay where
 
-import Effect.Class.Console                 (logShow)
 import Prelude
-import CSS                                  as CSS
-import Data.Array                           (filter
-                                            ,updateAt
-                                            ,findIndex
-                                            ,elemIndex)
-import Data.Const                           (Const)
-import Data.Maybe                           (Maybe(..)
-                                            ,fromMaybe)
-import Data.Eq                              (class EqRecord)
-import Data.Show                            (class ShowRecordFields)
-import Data.Generic.Rep                     (class Generic)
-import Data.Generic.Rep.Show                (genericShow)
-import Data.Traversable                     (traverse)
-import Data.UUID                            (UUID(..)
-                                            ,genUUID)
-import Effect.Class                         (class MonadEffect)
-import Halogen                              as H
-import Halogen.HTML.CSS                     as HCSS
-import Halogen.HTML                         as HH
-import Halogen.HTML.Events                  as HE
-import Halogen.HTML.Properties              as HP
-import Prim.RowList                         as RL
+import CSS                                      as CSS
+import Data.Array                               (filter
+                                                ,updateAt
+                                                ,findIndex
+                                                ,elemIndex)
+import Data.Const                               (Const)
+import Data.Maybe                               (Maybe(..)
+                                                ,fromMaybe)
+import Data.Eq                                  (class EqRecord)
+import Data.Show                                (class ShowRecordFields)
+import Data.Generic.Rep                         (class Generic)
+import Data.Generic.Rep.Show                    (genericShow)
+import Data.Traversable                         (traverse)
+import Data.UUID                                (UUID(..)
+                                                ,genUUID)
+import Effect.Class                             (class MonadEffect)
+import Effect.Class.Console                     (logShow)
+import Halogen                                  as H
+import Halogen.HTML.CSS                         as HCSS
+import Halogen.HTML                             as HH
+import Halogen.HTML.Events                      as HE
+import Halogen.HTML.Properties                  as HP
+import Prim.RowList                             as RL
 
-import Halogen.Media.Data.Media             (MediaArray
-                                            ,Media(..)
-                                            ,UIMedia(..))
-import Halogen.Media.Component.HTML.Utils   (css)
+import Halogen.Media.Component.HTML.Utils       (css)
+import Halogen.Media.Component.CSS.MediaDisplay as MediaDisplayStyle
+import Halogen.Media.Data.Media                 (MediaArray
+                                                ,Media(..)
+                                                ,UIMedia(..))
 
 type State r =
   { media :: Array (UIMedia r)
@@ -121,11 +122,14 @@ component =
     HH.a
       [ css $ "media-item selected-" <> show selected
       , HE.onClick \_ -> Just $ ClickMedia $ UIMedia (Media media) selected uuid
+      , HCSS.style $ MediaDisplayStyle.selected selected
       ]
       [ HH.div
-        [ css "thumbnail" ]
+        [ css "thumbnail" 
+        ]
         [ HH.div
-          [ css "thumbnail-overlay" ]
+          [ css "thumbnail-overlay" 
+          ]
           [ HH.div
             [ css "thumbnail-remove" 
             , HE.onClick \_ -> Just $ RemoveMedia $ UIMedia (Media media) selected uuid
@@ -134,13 +138,22 @@ component =
             ]
           ]
         , case media.thumbnail of
-          Just thumb -> HH.img [ HP.src thumb ]
-          Nothing    -> HH.img [ HP.src media.src ]
+          Just thumb -> HH.img [ HP.src thumb 
+                               , css "thumbnail-image"
+                               ]
+          Nothing    -> HH.img [ HP.src media.src 
+                               , css "thumbnail-image"
+                               ]
         ]
       ]
 
   render :: (State r) -> H.ComponentHTML (Action r) ChildSlots m
   render state =
     HH.div
-      [ css "media" ]
-      (state.media <#> renderMedia)
+      []
+      [ MediaDisplayStyle.stylesheet
+      , HH.div
+        [ css "media" 
+        ]
+        (state.media <#> renderMedia)
+      ]

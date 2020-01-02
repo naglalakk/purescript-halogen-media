@@ -1,33 +1,28 @@
 module Halogen.Media.Component.Browser where
 
 import Prelude
-import Data.Array                           ((..))
-import Effect.Class.Console                 (logShow)
-import Effect.Aff.Class                     (class MonadAff)
-import Effect.Class                         (class MonadEffect)
-import Data.Const                           (Const)
-import Data.Generic.Rep                     (class Generic)
-import Data.Generic.Rep.Show                (genericShow)
-import Data.Maybe                           (Maybe(..), fromMaybe)
-import Data.Symbol                          (SProxy(..))
-import Halogen                              as H
-import Halogen.HTML                         as HH
-import Halogen.HTML.Events                  as HE
-import Halogen.HTML.Properties              as HP
-import Web.File.FileList                    as FL
-import Web.File.File                        as File
-import Prim.RowList                         as RL
-import Data.Eq                              (class EqRecord)
-import Data.Show                            (class ShowRecordFields)
 
-import Halogen.Media.Data.Media             (Media(..)
-                                            ,MediaArray)
-import Halogen.Media.Data.File              (ExtendedFile(..)
-                                            ,ExtendedFileArray)
+import Data.Const (Const)
+import Data.Eq (class EqRecord)
+import Data.Generic.Rep (class Generic)
+import Data.Generic.Rep.Show (genericShow)
+import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Show (class ShowRecordFields)
+import Data.Symbol (SProxy(..))
+import Data.UUID (UUID(..))
+import Effect.Aff.Class (class MonadAff)
+import Effect.Class (class MonadEffect)
+import Halogen as H
+import Halogen.HTML as HH
+import Halogen.HTML.CSS (style)
+import Halogen.HTML.Events as HE
+import Halogen.Media.Component.CSS.Browser as BrowserStyle
+import Halogen.Media.Component.HTML.Utils (css)
 import Halogen.Media.Component.MediaDisplay as MediaDisplay
-import Halogen.Media.Component.Upload       as Upload
-import Halogen.Media.Component.HTML.Utils   (css)
-import Halogen.Media.Utils                  (fileListToFiles)
+import Halogen.Media.Component.Upload as Upload
+import Halogen.Media.Data.File (ExtendedFileArray)
+import Halogen.Media.Data.Media (Media, MediaArray)
+import Prim.RowList as RL
 
 data Tab
   = DisplayTab
@@ -59,7 +54,7 @@ data Output r
   | InsertedMedia (MediaArray r)
   | TabSwitch Tab
 
-type Query = Const Void
+data Query a = SetUploadStatus UUID Boolean a
 
 data Action r
   = MDOutput (MediaDisplay.Output r)
@@ -69,8 +64,8 @@ data Action r
   | Receive (Input r)
 
 type ChildSlots r = (
-  mediaDisplay :: H.Slot Query (MediaDisplay.Output r) Unit,
-  upload :: H.Slot Query Upload.Output Unit
+  mediaDisplay :: H.Slot MediaDisplay.Query (MediaDisplay.Output r) Unit,
+  upload :: H.Slot Upload.Query Upload.Output Unit
 )
 
 component :: forall m r l
@@ -86,6 +81,7 @@ component =
   , render
   , eval: H.mkEval H.defaultEval
     { handleAction = handleAction
+    , handleQuery = handleQuery
     , receive =  Just <<< Receive
     }
   }
@@ -96,6 +92,14 @@ component =
     , selectedTab: fromMaybe DisplayTab input.selectedTab
     , selectedMedia: []
     }
+
+  handleQuery :: forall a
+               . Query a 
+              -> H.HalogenM (State r) (Action r) (ChildSlots r) (Output r) m (Maybe a)
+  handleQuery = case _ of
+    SetUploadStatus uuid status a -> do
+      _ <- H.query (SProxy :: SProxy "upload") unit (H.tell (Upload.SetUploadStatus uuid status))
+      pure $ Just a
 
   handleAction = case _ of
     (MDOutput (MediaDisplay.ClickedMedia media)) -> do
@@ -114,8 +118,6 @@ component =
       state <- H.get
       H.raise $ InsertedMedia state.selectedMedia
     Receive inp -> do
-      logShow "input"
-      logShow inp
       H.modify_ _ { selectedTab = fromMaybe DisplayTab inp.selectedTab 
                   , media = inp.media
                   }
@@ -123,9 +125,12 @@ component =
   render :: (State r) -> H.ComponentHTML (Action r) (ChildSlots r) m
   render state =
     HH.div
-      [ css "media-browser" ]
-      [ HH.div
-        [ css "tabs" ]
+      [ css "media-browser" 
+      ]
+      [ BrowserStyle.stylesheet
+      , HH.div
+        [ css "tabs" 
+        ]
         [ HH.div
           [ css "tab media-tab"
           , HE.onClick $ \e -> Just $ SwitchTab DisplayTab
@@ -158,3 +163,4 @@ component =
               unit
               (Just <<< ULOutput)
       ]
+

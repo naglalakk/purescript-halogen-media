@@ -114,7 +114,10 @@ let mkPackage =
 let upstream =
       https://raw.githubusercontent.com/purescript/package-sets/psc-0.13.0-20190607/src/packages.dhall sha256:96b28e434b8a62caea5f10376b4f7dc1736a668592cabe914f117ecf5673c2ff
 
-let overrides = {=}
+let overrides = 
+  { css =
+      upstream.css // { repo = "https://github.com/slamdata/purescript-css", version = "master" }
+  }
 
 let additions = 
   { dom-filereader =
