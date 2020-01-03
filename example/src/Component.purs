@@ -13,6 +13,7 @@ import Halogen.HTML.Events                  as HE
 import Halogen.HTML.Properties              as HP
 import Data.Symbol                          (SProxy(..))
 
+import Halogen.Media.Component.Modal        as Modal
 import Halogen.Media.Component.Browser      as Browser
 import Halogen.Media.Data.File              (ExtendedFile(..))
 import Halogen.Media.Data.Media             (MediaArray
@@ -20,11 +21,13 @@ import Halogen.Media.Data.Media             (MediaArray
 import Example.TestData                     (Img, medias)
 
 type State = 
-  { media :: MediaArray Img
+  { isActive :: Boolean
+  , media :: MediaArray Img
   }
 
 data Action
   = Initialize
+  | OpenModal
   | HandleBrowserAction (Browser.Output Img)
 
 type Input = Unit
@@ -32,7 +35,7 @@ type Input = Unit
 type Query = Browser.Query
 
 type ChildSlots = (
-  mediaBrowser :: H.Slot Query (Browser.Output Img) Unit
+  modal :: H.Slot Modal.Query (Browser.Output Img) Unit
 )
 
 component :: forall m
@@ -51,7 +54,8 @@ component =
   where
   initialState :: State
   initialState = 
-    { media: []
+    { isActive: false
+    , media: []
     }
 
   handleAction = case _ of
@@ -75,21 +79,28 @@ component =
 
     HandleBrowserAction (Browser.Dropped files) -> do
       _ <- traverse (\(ExtendedFile f uuid t) -> do
-        H.query (SProxy :: SProxy "mediaBrowser") unit (H.tell (Browser.SetUploadStatus uuid true))) files
+        H.query (SProxy :: SProxy "modal") unit (H.tell (Modal.SetUploadStatus uuid true))) files
       logShow "You dropped a file into the upload area"
 
     HandleBrowserAction (Browser.TabSwitch tab) ->
       logShow $ "You just changed to tab: " <> (show tab)
 
+    OpenModal -> H.modify_ _ { isActive = true }
+
   render :: State -> H.ComponentHTML Action ChildSlots m 
   render state =
     HH.div
       []
-      [ HH.slot 
-        (SProxy :: _ "mediaBrowser") 
+      [ HH.button
+        [ HE.onClick \_ -> Just OpenModal
+        ]
+        [ HH.text "Open Modal" ]
+      , HH.slot 
+        (SProxy :: _ "modal") 
         unit
-        Browser.component
-        { media: state.media
-        , selectedTab: Nothing }
+        Modal.component
+        { isActive: state.isActive
+        , media: state.media
+        }
         (Just <<< HandleBrowserAction)
       ]

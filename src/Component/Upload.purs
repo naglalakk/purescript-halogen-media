@@ -77,10 +77,6 @@ data Action
 
 type ChildSlots = ()
 
-type UploadStatus =
-  { uuid :: UUID
-  , status :: Boolean
-  }
 data Query a = SetUploadStatus UUID Boolean a
 
 derive instance genericOutput :: Generic Output _
