@@ -16,7 +16,6 @@ stylesheet = HCSS.stylesheet do
   uploads 
   uploadFile
   uploadInfo
-  uploadTitle
   uploadThumbnail
 
 uploadContainer :: CSS.CSS
