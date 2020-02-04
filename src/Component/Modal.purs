@@ -14,13 +14,13 @@ import Halogen                              as H
 import Halogen.HTML                         as HH
 import Halogen.HTML.Events                  as HE
 import Halogen.HTML.CSS                     as HCSS
-import Halogen.Media.Component.Browser      as Browser
 import Prim.RowList                         as RL
 
-import Halogen.Media.Data.Media             (Media
-                                            ,MediaArray)
+import Halogen.Media.Component.Browser      as Browser
 import Halogen.Media.Component.HTML.Utils   (css)
 import Halogen.Media.Component.CSS.Modal    as ModalStyle
+import Halogen.Media.Data.Media             (Media
+                                            ,MediaArray)
 
 -- | A modal for Component.Browser 
 
@@ -43,6 +43,7 @@ type Input r =
 type State r =
   { isActive :: Boolean
   , media :: MediaArray r
+  , currentTab :: Maybe Browser.Tab
   }
 
 
@@ -68,6 +69,7 @@ component =
   initialState inp = 
     { isActive: inp.isActive
     , media: inp.media
+    , currentTab: Just Browser.DisplayTab
     }
 
   handleAction :: (Action r)
@@ -77,9 +79,16 @@ component =
       state <- H.get
       case state.isActive of
         false -> pure unit
-        true  -> H.modify_ _ { isActive = false }
+        true  -> H.modify_ _ { isActive = false 
+                             , currentTab = Just Browser.DisplayTab
+                             }
 
-    HandleBrowserAction action -> H.raise action
+    HandleBrowserAction action -> 
+      case action of
+        Browser.TabSwitch tab -> do
+          H.modify_ _ { currentTab = Just tab }
+          H.raise action
+        _ -> H.raise action
 
     Receive inp -> do
       H.modify_ _ { isActive = inp.isActive
@@ -115,7 +124,7 @@ component =
             unit
             Browser.component
             { media: state.media 
-            , selectedTab: Just Browser.DisplayTab
+            , selectedTab: state.currentTab
             }
             (Just <<< HandleBrowserAction)
           ]
