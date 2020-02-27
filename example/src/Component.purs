@@ -32,10 +32,10 @@ data Action
 
 type Input = Unit
 
-type Query = Browser.Query
+type Query = (Browser.Query Img)
 
 type ChildSlots = (
-  modal :: H.Slot Modal.Query (Browser.Output Img) Unit
+  modal :: H.Slot (Modal.Query Img) (Browser.Output Img) Unit
 )
 
 component :: forall m

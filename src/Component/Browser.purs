@@ -2,27 +2,30 @@ module Halogen.Media.Component.Browser where
 
 import Prelude
 
-import Data.Const (Const)
-import Data.Eq (class EqRecord)
-import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
-import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Show (class ShowRecordFields)
-import Data.Symbol (SProxy(..))
-import Data.UUID (UUID(..))
-import Effect.Aff.Class (class MonadAff)
-import Effect.Class (class MonadEffect)
-import Halogen as H
-import Halogen.HTML as HH
-import Halogen.HTML.CSS (style)
-import Halogen.HTML.Events as HE
-import Halogen.Media.Component.CSS.Browser as BrowserStyle
-import Halogen.Media.Component.HTML.Utils (css)
+import Data.Array                           (snoc)
+import Data.Const                           (Const)
+import Data.Eq                              (class EqRecord)
+import Data.Generic.Rep                     (class Generic)
+import Data.Generic.Rep.Show                (genericShow)
+import Data.Maybe                           (Maybe(..)
+                                            ,fromMaybe)
+import Data.Show                            (class ShowRecordFields)
+import Data.Symbol                          (SProxy(..))
+import Data.UUID                            (UUID(..))
+import Effect.Aff.Class                     (class MonadAff)
+import Effect.Class                         (class MonadEffect)
+import Halogen                              as H
+import Halogen.HTML                         as HH
+import Halogen.HTML.CSS                     (style)
+import Halogen.HTML.Events                  as HE
+import Prim.RowList                         as RL
+
+import Halogen.Media.Component.CSS.Browser  as BrowserStyle
+import Halogen.Media.Component.HTML.Utils   (css)
 import Halogen.Media.Component.MediaDisplay as MediaDisplay
-import Halogen.Media.Component.Upload as Upload
-import Halogen.Media.Data.File (ExtendedFileArray)
-import Halogen.Media.Data.Media (Media, MediaArray)
-import Prim.RowList as RL
+import Halogen.Media.Component.Upload       as Upload
+import Halogen.Media.Data.File              (ExtendedFileArray)
+import Halogen.Media.Data.Media             (Media, MediaArray)
 
 data Tab
   = DisplayTab
@@ -54,7 +57,9 @@ data Output r
   | InsertedMedia (MediaArray r)
   | TabSwitch Tab
 
-data Query a = SetUploadStatus UUID Boolean a
+data Query r a 
+  = SetUploadStatus UUID Boolean a
+  | UpdateSelectedMedia (Media r) a
 
 data Action r
   = MDOutput (MediaDisplay.Output r)
@@ -74,7 +79,7 @@ component :: forall m r l
           => ShowRecordFields l ( src :: String, thumbnail :: Maybe String | r)
           => MonadEffect m
           => MonadAff m
-          => H.Component HH.HTML Query (Input r) (Output r) m
+          => H.Component HH.HTML (Query r) (Input r) (Output r) m
 component =
   H.mkComponent
   { initialState: initialState
@@ -94,11 +99,17 @@ component =
     }
 
   handleQuery :: forall a
-               . Query a 
+               . Query r a
               -> H.HalogenM (State r) (Action r) (ChildSlots r) (Output r) m (Maybe a)
   handleQuery = case _ of
     SetUploadStatus uuid status a -> do
       _ <- H.query (SProxy :: SProxy "upload") unit (H.tell (Upload.SetUploadStatus uuid status))
+      pure $ Just a
+    UpdateSelectedMedia media a -> do
+      state <- H.get
+      H.modify_ _ 
+        { selectedMedia = snoc state.selectedMedia media 
+        }
       pure $ Just a
 
   handleAction = case _ of

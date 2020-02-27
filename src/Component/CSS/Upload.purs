@@ -1,14 +1,18 @@
 module Halogen.Media.Component.CSS.Upload where
 
 import Prelude
-import Color                    as Color
-import CSS                      as CSS
-import CSS                      ((&),(?))
-import CSS.Common               (center)
-import CSS.TextAlign            (textAlign, TextAlign(..))
-import CSS.Overflow             (overflow, overflowY, scroll)
-import CSS.ListStyle.Type       as LT
-import Halogen.HTML.CSS         as HCSS
+import Color                                as Color
+import CSS                                  as CSS
+import CSS                                  ((&),(?))
+import CSS.Flexbox                          (flex)
+import CSS.Common                           (center, auto)
+import CSS.TextAlign                        (textAlign
+                                            ,TextAlign(..))
+import CSS.Overflow                         (overflow
+                                            ,overflowY, scroll)
+import CSS.ListStyle.Type                   as LT
+import Halogen.HTML.CSS                     as HCSS
+import Halogen.Media.Component.CSS.Utils    (padding, margin)
 
 stylesheet = HCSS.stylesheet do
   uploadContainer
@@ -23,11 +27,13 @@ uploadContainer = do
   CSS.fromString ".upload-container" ? do
     CSS.position CSS.relative
     CSS.marginTop $ CSS.px 25.0
+    CSS.display CSS.flex
 
 dropbox :: CSS.CSS
 dropbox = do
   CSS.fromString ".dropbox" ? do
     CSS.display CSS.flex
+    flex 1 1 auto
     CSS.justifyContent $ CSS.JustifyContentValue center
     CSS.alignItems $ CSS.AlignItemsValue center
     CSS.position CSS.relative
@@ -35,6 +41,7 @@ dropbox = do
     CSS.width $ CSS.pct 100.0
     CSS.minHeight $ CSS.px 300.0
     CSS.marginBottom $ CSS.px 25.0
+    margin 25.0
     overflowY scroll
     
 

@@ -25,10 +25,12 @@ import Halogen.Media.Data.Media             (Media
 -- | A modal for Component.Browser 
 
 type ChildSlots r = (
-  browser :: H.Slot Browser.Query (Browser.Output r) Unit
+  browser :: H.Slot (Browser.Query r) (Browser.Output r) Unit
 )
 
-data Query a = SetUploadStatus UUID Boolean a
+data Query r a 
+  = SetUploadStatus UUID Boolean a
+  | UpdateSelectedMedia (Media r) a
 
 data Action r
   = Receive (Input r)
@@ -53,7 +55,7 @@ component :: forall m r l
           => ShowRecordFields l ( src :: String, thumbnail :: Maybe String | r)
           => MonadEffect m
           => MonadAff m
-          => H.Component HH.HTML Query (Input r) (Browser.Output r) m
+          => H.Component HH.HTML (Query r) (Input r) (Browser.Output r) m
 component = 
   H.mkComponent
     { initialState: initialState
@@ -96,11 +98,14 @@ component =
                   }
 
   handleQuery :: forall a
-               . Query a 
+               . Query r a 
               -> H.HalogenM (State r) (Action r) (ChildSlots r) (Browser.Output r) m (Maybe a)
   handleQuery = case _ of
     SetUploadStatus uuid status a -> do
       _ <- H.query (SProxy :: SProxy "browser") unit (H.tell (Browser.SetUploadStatus uuid status))
+      pure $ Just a
+    UpdateSelectedMedia media a -> do
+      _ <- H.query (SProxy :: SProxy "browser") unit (H.tell (Browser.UpdateSelectedMedia media))
       pure $ Just a
 
   render :: (State r) -> H.ComponentHTML (Action r) (ChildSlots r) m
