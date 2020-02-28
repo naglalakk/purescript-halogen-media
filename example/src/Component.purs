@@ -60,7 +60,7 @@ component =
 
   handleAction = case _ of
     Initialize -> do
-      images <- H.liftEffect $ medias 20
+      images <- H.liftEffect $ medias 50
       H.modify_ _ { media = images }
 
     HandleBrowserAction (Browser.Clicked output) -> do

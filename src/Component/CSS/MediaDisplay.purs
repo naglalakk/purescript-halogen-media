@@ -4,6 +4,8 @@ import Prelude
 import Color                    as Color
 import CSS                      as CSS
 import CSS                      ((&),(?))
+import CSS.Geometry             (marginBottom)
+import CSS.Overflow             (overflowY, scroll)
 import CSS.Common               (center)
 import Halogen.HTML.CSS         as HCSS
 import Halogen                  as H
@@ -21,7 +23,9 @@ media = do
   CSS.fromString ".media" ? do
     CSS.display CSS.flex
     CSS.flexWrap CSS.wrap 
-    CSS.height $ CSS.pct 100.0
+    CSS.maxHeight $ CSS.px 650.0
+    marginBottom $ CSS.px 100.0
+    overflowY scroll
 
 mediaItem :: CSS.CSS
 mediaItem = do
