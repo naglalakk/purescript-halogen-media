@@ -85,6 +85,10 @@ component =
     HandleBrowserAction (Browser.TabSwitch tab) ->
       logShow $ "You just changed to tab: " <> (show tab)
 
+    HandleBrowserAction (Browser.ScrollIsAtBottom) ->
+      logShow "Scroll position is now at the bottom of the media container. \
+        \ You can use this action to e.g. load more images "
+
     OpenModal -> H.modify_ _ { isActive = true }
 
   render :: State -> H.ComponentHTML Action ChildSlots m 

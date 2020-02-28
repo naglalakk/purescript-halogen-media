@@ -1,6 +1,6 @@
 {
   "name": "purescript-halogen-media-library",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "description": "Purescript Halogen Media Library",
   "main": "index.js",
   "author": "Thordur Hermannsson",

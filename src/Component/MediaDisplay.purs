@@ -17,13 +17,32 @@ import Data.Traversable                         (traverse)
 import Data.UUID                                (UUID(..)
                                                 ,genUUID)
 import Effect.Class                             (class MonadEffect)
+import Effect.Aff.Class                         (class MonadAff)
 import Effect.Class.Console                     (logShow)
 import Halogen                                  as H
 import Halogen.HTML.CSS                         as HCSS
 import Halogen.HTML                             as HH
 import Halogen.HTML.Events                      as HE
 import Halogen.HTML.Properties                  as HP
+import Halogen.Query.EventSource                as ES
 import Prim.RowList                             as RL
+import Web.Event.CustomEvent                    as CEV
+import Web.Event.Event                          as EV
+import Web.HTML                                 (HTMLDocument)
+import Web.HTML (window)                        as Web
+import Web.HTML.HTMLDocument                    as HTMLDocument
+import Web.HTML.HTMLElement                     as HTMLElement
+import Web.DOM.Element                          as Element
+import Web.HTML.Window                          as Web
+import Web.TouchEvent.EventTypes                as TET
+import Web.TouchEvent.Touch                     as Touch
+import Web.TouchEvent.TouchEvent                as TE
+import Web.TouchEvent.TouchList                 as TouchList
+import Web.UIEvent.KeyboardEvent                (KeyboardEvent)
+import Web.UIEvent.KeyboardEvent                as KE
+import Web.UIEvent.KeyboardEvent.EventTypes     as KET
+import Web.UIEvent.WheelEvent                   as WE
+import Web.UIEvent.WheelEvent.EventTypes        as WET
 
 import Halogen.Media.Component.HTML.Utils       (css)
 import Halogen.Media.Component.CSS.MediaDisplay as MediaDisplayStyle
@@ -46,16 +65,19 @@ data Action r
   = Initialize
   | ClickMedia (UIMedia r)
   | RemoveMedia (UIMedia r)
+  | HandleWheel WE.WheelEvent
   | Receive (Input r)
 
 data Output r
   = ClickedMedia (MediaArray r)
   | RemovedMedia (Media r)
+  | ScrollIsAtBottom
 
 component :: forall m r l
            . RL.RowToList (src :: String, thumbnail :: Maybe String | r) l
           => EqRecord l ( src :: String, thumbnail :: Maybe String | r)
           => ShowRecordFields l ( src :: String, thumbnail :: Maybe String | r)
+          => MonadAff m
           => MonadEffect m 
           => H.Component HH.HTML Query (Input r) (Output r) m
 component =
@@ -80,7 +102,38 @@ component =
       newMedias <- traverse (\(UIMedia media selected uuid) -> do
         uuidNew <- H.liftEffect $ genUUID
         pure $ UIMedia media selected (Just uuidNew)) state.media
+
+      element <- H.getHTMLElementRef 
+              $  H.RefLabel "media-container"
+      case element of
+        Just elem -> do
+          -- subscribe
+          H.subscribe' \sid ->
+            ES.eventListenerEventSource
+            WET.wheel
+            (HTMLElement.toEventTarget elem)
+            (map HandleWheel <<< WE.fromEvent)
+        Nothing -> do
+          pure unit
       H.modify_ _ { media = newMedias }
+
+    HandleWheel ev -> do
+      ref <- H.getHTMLElementRef 
+          $ H.RefLabel "media-container"
+      case ref of
+        Just element -> do
+          let domElement = HTMLElement.toElement element
+          offsetHeight <- H.liftEffect $ HTMLElement.offsetHeight element
+          scrollHeight <- H.liftEffect $ Element.scrollHeight domElement
+          scrollTop <- H.liftEffect $ Element.scrollTop domElement
+
+          let contentHeight = scrollHeight - offsetHeight
+          case contentHeight <= scrollTop of
+            true -> H.raise ScrollIsAtBottom
+            false -> pure unit
+        Nothing -> do
+          pure unit
+
     (ClickMedia (UIMedia (Media media) selected uuid)) -> do
       state <- H.get
       let 
@@ -99,6 +152,7 @@ component =
               H.raise $ ClickedMedia allClickedMedia
             Nothing -> pure unit
         Nothing -> pure unit
+
     (RemoveMedia (UIMedia (Media media) selected uuid)) -> do
       state <- H.get
       let 

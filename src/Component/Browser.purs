@@ -56,6 +56,7 @@ data Output r
   | Dropped ExtendedFileArray
   | InsertedMedia (MediaArray r)
   | TabSwitch Tab
+  | ScrollIsAtBottom
 
 data Query r a 
   = SetUploadStatus UUID Boolean a
@@ -118,6 +119,8 @@ component =
       H.raise $ Clicked media
     (MDOutput (MediaDisplay.RemovedMedia media)) ->
       H.raise $ Removed media
+    (MDOutput (MediaDisplay.ScrollIsAtBottom)) -> 
+      H.raise $ ScrollIsAtBottom 
     (ULOutput (Upload.UploadFiles files)) ->
       H.raise $ Upload files
     (ULOutput (Upload.DroppedFiles files)) ->
