@@ -154,6 +154,7 @@ component =
       [ MediaDisplayStyle.stylesheet
       , HH.div
         [ css "media" 
+        , HP.ref $ H.RefLabel "media-container" 
         ]
         (state.media <#> renderMedia)
       ]
