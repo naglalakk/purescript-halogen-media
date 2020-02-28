@@ -115,6 +115,8 @@ component =
       , HCSS.style $ ModalStyle.modalLayer state.isActive
       ] 
       [ ModalStyle.stylesheet
+      , HCSS.stylesheet do
+        ModalStyle.modalIsActive state.isActive 
       , HH.div
         [ css "modal-container" ]
         [ HH.div

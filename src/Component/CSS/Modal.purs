@@ -5,6 +5,7 @@ import Color                                as Color
 import CSS                                  as CSS
 import CSS                                  ((&),(?))
 import CSS.Common                           (center)
+import CSS.Overflow                         (overflowY, hidden, scroll)
 import Halogen.HTML.CSS                     as HCSS
 
 import Halogen.Media.Component.CSS.Utils    (padding
@@ -14,6 +15,13 @@ stylesheet = HCSS.stylesheet do
   modalContainer
   modalHeader
   media
+
+modalIsActive :: Boolean -> CSS.CSS
+modalIsActive active = do
+  CSS.fromString "body" ? do
+    case active of 
+      true  -> overflowY hidden 
+      false -> overflowY scroll
 
 modalContainer :: CSS.CSS
 modalContainer = do
@@ -53,4 +61,3 @@ media :: CSS.CSS
 media = do
   CSS.fromString ".media" ? do
     padding 12.5
-
