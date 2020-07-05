@@ -186,7 +186,6 @@ component =
         droppedFiles = fileListToFiles
                      $ DT.files
                      $ DE.dataTransfer ev
-
       H.liftEffect $ EV.preventDefault event
       extendedFiles <- traverse (\x -> do
         uuid <- H.liftEffect $ genUUID
@@ -196,7 +195,7 @@ component =
         H.liftEffect $ FileReader.readAsDataURL blob reader
         pure $ ExtendedFile x uuid Nothing
       ) droppedFiles
-
+      
       let 
         uploadFiles = map (\(ExtendedFile file uuid thumb) -> UploadFile (ExtendedFile file uuid thumb) false) extendedFiles
         allFiles = state.files <> uploadFiles

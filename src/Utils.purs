@@ -26,16 +26,11 @@ fileListToFiles fl = case fl of
     catMaybes $ map (\x -> FL.item x files) (0..filesLen)
   Nothing -> []
 
--- | Creates a new FormData
---   and adds files to it 
---   with entryName
---   returns the new FormData
-filesToFormData :: String 
-                -> ExtendedFileArray 
-                -> Effect FD.FormData
-filesToFormData entryName files = do
+-- Convert a single ExtendedFile to FormData
+fileToFormData :: String
+               -> ExtendedFile
+               -> Effect FD.FormData
+fileToFormData entryName (ExtendedFile file uuid fileName) = do
   formData <- FD.new
-  _ <- traverse (\(ExtendedFile file uuid fileName) ->
-    CFD.appendFile (FD.EntryName entryName) file formData)
-    files
+  CFD.appendFile (FD.EntryName entryName) file formData
   pure formData
