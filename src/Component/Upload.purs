@@ -25,6 +25,7 @@ import Data.Generic.Rep.Show                (genericShow)
 import Data.Traversable                     (traverse)
 import Data.UUID                            (UUID(..)
                                             ,genUUID)
+import FileSize                             (getHumanSize)
 import Foreign                              (Foreign
                                             ,readString)
 import Halogen                              as H
@@ -237,7 +238,7 @@ component =
           [ HH.b
             []
             [ HH.text "Filesize: "]
-          , HH.text $ show $ File.size file ]
+          , HH.text $ getHumanSize $ File.size file ]
         , HH.li
           [ css $ "upload-status upload-" <> show status ]
           [ HH.div

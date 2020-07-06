@@ -129,6 +129,11 @@ let additions =
       ]
       "https://github.com/nwolverson/purescript-dom-filereader"
       "master"
+  , filesize = 
+      mkPackage
+      [ "math", "numbers" ]
+      "https://github.com/naglalakk/purescript-filesize"
+      "master"
   , uuid =
       mkPackage
       [ "effect"
