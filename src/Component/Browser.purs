@@ -50,7 +50,8 @@ type Input r =
   }
 
 data Output r
-  = Clicked (MediaArray r)
+  = Closed 
+  | Clicked (MediaArray r)
   | Removed (Media r)
   | Upload  ExtendedFileArray
   | Dropped ExtendedFileArray

@@ -84,6 +84,7 @@ component =
         true  -> H.modify_ _ { isActive = false 
                              , currentTab = Just Browser.DisplayTab
                              }
+      H.raise Browser.Closed
 
     HandleBrowserAction action -> 
       case action of
