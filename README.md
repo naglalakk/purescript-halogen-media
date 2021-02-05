@@ -13,3 +13,5 @@ Install deps
 Run the example
 
     make example
+
+Navigate to http://127.0.0.1:8080/example/
