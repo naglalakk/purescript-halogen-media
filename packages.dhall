@@ -108,11 +108,9 @@ let additions =
 -------------------------------
 -}
 
-let mkPackage =
-      https://raw.githubusercontent.com/purescript/package-sets/psc-0.13.0-20190607/src/mkPackage.dhall sha256:0b197efa1d397ace6eb46b243ff2d73a3da5638d8d0ac8473e8e4a8fc528cf57
-
 let upstream =
-      https://raw.githubusercontent.com/purescript/package-sets/psc-0.13.0-20190607/src/packages.dhall sha256:96b28e434b8a62caea5f10376b4f7dc1736a668592cabe914f117ecf5673c2ff
+      https://github.com/purescript/package-sets/releases/download/psc-0.13.8-20210118/packages.dhall sha256:a59c5c93a68d5d066f3815a89f398bcf00e130a51cb185b2da29b20e2d8ae115
+
 
 let overrides = 
   { css =
@@ -121,25 +119,34 @@ let overrides =
 
 let additions = 
   { dom-filereader =
-      mkPackage
+    { dependencies =
       [ "web-html"
       , "aff"
       , "arraybuffer-types"
       , "web-file"
       ]
+    , repo =
       "https://github.com/nwolverson/purescript-dom-filereader"
+    , version =
       "master"
+    }
   , filesize = 
-      mkPackage
+    { dependencies =
       [ "math", "numbers" ]
+    , repo = 
       "https://github.com/naglalakk/purescript-filesize"
+    , version = 
       "master"
+    }
   , uuid =
-      mkPackage
+    { dependencies = 
       [ "effect"
       ]
+    , repo =
       "https://github.com/spicydonuts/purescript-uuid"
+    , version = 
       "master"
+    }
   }
 
 in  upstream // overrides // additions

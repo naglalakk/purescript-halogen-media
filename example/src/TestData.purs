@@ -1,23 +1,20 @@
 module Example.TestData where
 
 import Prelude
-import Effect                               (Effect(..))
-import Effect.Class.Console                 (logShow)
-import Data.Array                           (fromFoldable
-                                            ,replicate)
-import Data.Foldable                        (class Foldable)
-import Data.Generic.Rep                     (class Generic)
-import Data.Generic.Rep.Show                (genericShow)
-import Data.List.Lazy                       (toUnfoldable
-                                            ,replicateM)
-import Data.List                            (List(..))
-import Data.Generic.Rep.Show                (genericShow)
-import Data.Maybe                           (Maybe(..))
-import Data.Traversable                     (traverse)
-import Data.UUID                            (genUUID)
 
-import Halogen.Media.Data.Media             (Media(..)
-                                            ,MediaArray)
+import Data.Array (fromFoldable, replicate)
+import Data.Foldable (class Foldable)
+import Data.Generic.Rep (class Generic)
+import Data.Generic.Rep.Show (genericShow)
+import Data.Generic.Rep.Show (genericShow)
+import Data.List (List(..))
+import Data.List.Lazy (toUnfoldable, replicateM)
+import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Traversable (traverse)
+import Data.UUID (genUUID)
+import Effect (Effect(..))
+import Effect.Class.Console (logShow)
+import Halogen.Media.Data.Media (Media(..), MediaArray)
 
 type Img = (
     id :: Int
@@ -35,9 +32,9 @@ type ImageArray = Array Image
 
 newtype Video = Video
   { id  :: Int
+  , name :: String
   , src :: String
   , thumbnail :: Maybe String
-  , title :: Maybe String
   }
 
 type VideoArray = Array Video
@@ -75,7 +72,7 @@ videos n
     { id: _id
     , src: src
     , thumbnail: thumbnail
-    , title: title
+    , name: fromMaybe "" title
     }
   where
     _id = 0
@@ -89,5 +86,7 @@ videos n
 medias :: Int -> Effect (MediaArray Img)
 medias n = do
   imgs <- images n
+  let 
+    vids = map (\(Video x) -> Media x) (videos n)
   let mediaImages = map (\(Image x) -> Media x) imgs
-  pure mediaImages
+  pure $ mediaImages <> vids

@@ -8,7 +8,7 @@ install:
 example:
 	make browser && http-server -o
 browser:
-	make bundle && parcel build example/build/index.js -d example/dist
+	make bundle && parcel build example/build/index.js --public-url /example/dist/ -d example/dist
 
 bundle:
 	spago build --path 'example/**/*.purs' && spago bundle-app --main Example.Main --to example/build/index.js

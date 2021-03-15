@@ -88,6 +88,10 @@ uploadThumbnail = do
     CSS.alignItems $ CSS.AlignItemsValue center
     CSS.width $ CSS.pct 100.0
     CSS.height $ CSS.px 200.0
+    CSS.backgroundRepeat CSS.noRepeat
+    CSS.backgroundSize CSS.contain
+    CSS.backgroundPosition $ CSS.placed CSS.sideCenter CSS.sideCenter
+    CSS.marginBottom $ CSS.px 12.5
 
   CSS.fromString ".upload-thumbnail > img" ? do
     CSS.width $ CSS.pct 100.0

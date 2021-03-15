@@ -2,6 +2,7 @@ module Halogen.Media.Component.CSS.Utils where
 
 import Prelude
 import CSS          as CSS
+import Color        as Color
 
 padding :: Number -> CSS.CSS
 padding size = CSS.padding 

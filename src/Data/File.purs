@@ -1,11 +1,11 @@
 module Halogen.Media.Data.File where
 
-import Prelude
-import Web.File.File        as File
-import Data.UUID            (UUID)
-import Data.Maybe
+import Web.File.File as File
+import Data.UUID (UUID)
+import Data.Maybe (Maybe)
 
-type UploadStatus = Boolean
+type UploadStatus
+  = Boolean
 
 -- | Extended file contains a unique UUID
 -- for identification and a (Maybe String)
@@ -15,8 +15,11 @@ data ExtendedFile
 
 -- | Data type used internally by Component.Upload
 --   Adds a UploadStatus type for upload status
-data UploadFile 
+data UploadFile
   = UploadFile ExtendedFile UploadStatus
 
-type ExtendedFileArray = Array ExtendedFile
-type UploadFileArray   = Array UploadFile
+type ExtendedFileArray
+  = Array ExtendedFile
+
+type UploadFileArray
+  = Array UploadFile
