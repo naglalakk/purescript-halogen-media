@@ -229,10 +229,7 @@ component =
           [ css "upload-thumbnail"
           , HCSS.style do
               CSS.backgroundImage $ CSS.url (fromMaybe "" thumb)
-          ]
-          [ HH.img
-              [ HP.src $ fromMaybe "" thumb ]
-          ]
+          ] []
       , HH.ul
           [ css "upload-info"
           ]
