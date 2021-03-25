@@ -1,6 +1,7 @@
 module Halogen.Media.Component.Modal where
 
 import Prelude
+
 import Data.Eq (class EqRecord)
 import Data.Maybe (Maybe(..))
 import Data.Show (class ShowRecordFields)
@@ -15,6 +16,7 @@ import Halogen.HTML.Events as HE
 import Halogen.Media.Component.Browser as Browser
 import Halogen.Media.Component.CSS.Modal as ModalStyle
 import Halogen.Media.Component.HTML.Utils (css)
+import Halogen.Media.Data.Config.Upload (UploadConfig)
 import Halogen.Media.Data.Media (Media, MediaArray)
 import Prim.RowList as RL
 
@@ -35,12 +37,14 @@ data Action r
 type Input r
   = { isActive :: Boolean
     , media :: MediaArray r
+    , uploadConfig :: Maybe UploadConfig
     }
 
 type State r
   = { isActive :: Boolean
     , media :: MediaArray r
     , currentTab :: Maybe Browser.Tab
+    , uploadConfig :: Maybe UploadConfig
     }
 
 component ::
@@ -69,6 +73,7 @@ component =
     { isActive: inp.isActive
     , media: inp.media
     , currentTab: Just Browser.DisplayTab
+    , uploadConfig: inp.uploadConfig
     }
 
   handleAction ::
@@ -137,6 +142,7 @@ component =
                   Browser.component
                   { media: state.media
                   , selectedTab: state.currentTab
+                  , uploadConfig: state.uploadConfig
                   }
                   (Just <<< HandleBrowserAction)
               ]

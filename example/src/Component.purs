@@ -1,24 +1,24 @@
 module Example.Component where
 
 import Prelude
-import Effect.Class.Console                 (logShow)
-import Effect.Class                         (class MonadEffect)
-import Effect.Aff.Class                     (class MonadAff)
-import Data.Traversable                     (traverse)
-import Data.Const                           (Const)
-import Data.Maybe                           (Maybe(..))
-import Halogen                              as H
-import Halogen.HTML                         as HH
-import Halogen.HTML.Events                  as HE
-import Halogen.HTML.Properties              as HP
-import Data.Symbol                          (SProxy(..))
 
-import Halogen.Media.Component.Modal        as Modal
-import Halogen.Media.Component.Browser      as Browser
-import Halogen.Media.Data.File              (ExtendedFile(..))
-import Halogen.Media.Data.Media             (MediaArray
-                                            ,Media(..))
-import Example.TestData                     (Img, medias)
+import Data.Const (Const)
+import Data.Maybe (Maybe(..))
+import Data.Symbol (SProxy(..))
+import Data.Traversable (traverse)
+import Effect.Aff.Class (class MonadAff)
+import Effect.Class (class MonadEffect)
+import Effect.Class.Console (logShow)
+import Example.TestData (Img, medias)
+import Halogen as H
+import Halogen.HTML as HH
+import Halogen.HTML.Events as HE
+import Halogen.HTML.Properties as HP
+import Halogen.Media.Component.Browser as Browser
+import Halogen.Media.Component.Modal as Modal
+import Halogen.Media.Data.Config.Upload (UploadConfig(..))
+import Halogen.Media.Data.File (ExtendedFile(..))
+import Halogen.Media.Data.Media (MediaArray, Media(..))
 
 type State = 
   { isActive :: Boolean
@@ -108,6 +108,16 @@ component =
         Modal.component
         { isActive: state.isActive
         , media: state.media
+        , uploadConfig: Just $ UploadConfig
+          { maxUploads: 1
+          , defaultLabel: "Some default label"
+          , pendingLabel: "Pending"
+          , completedLabel: "Completed"
+          , nameLabel: "Name"
+          , fileSizeLabel: "Filesize"
+          , statusLabel: "Status"
+          , uploadThumbnail: Just "/example/static/video.png"
+          }
         }
         (Just <<< HandleBrowserAction)
       ]

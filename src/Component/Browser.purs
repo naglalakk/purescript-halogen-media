@@ -1,14 +1,12 @@
 module Halogen.Media.Component.Browser where
 
 import Prelude
+
 import Data.Array (snoc)
 import Data.Eq (class EqRecord)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
-import Data.Maybe
-  ( Maybe(..)
-  , fromMaybe
-  )
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Show (class ShowRecordFields)
 import Data.Symbol (SProxy(..))
 import Data.UUID (UUID)
@@ -21,6 +19,7 @@ import Halogen.Media.Component.CSS.Browser as BrowserStyle
 import Halogen.Media.Component.HTML.Utils (css)
 import Halogen.Media.Component.MediaDisplay as MediaDisplay
 import Halogen.Media.Component.Upload as Upload
+import Halogen.Media.Data.Config.Upload (UploadConfig)
 import Halogen.Media.Data.File (ExtendedFileArray)
 import Halogen.Media.Data.Media (Media, MediaArray)
 import Prim.RowList as RL
@@ -42,11 +41,13 @@ type State r
   = { media :: MediaArray r
     , selectedMedia :: MediaArray r
     , selectedTab :: Tab
+    , uploadConfig :: Maybe UploadConfig
     }
 
 type Input r
   = { media :: MediaArray r
     , selectedTab :: Maybe Tab
+    , uploadConfig :: Maybe UploadConfig
     }
 
 data Output r
@@ -101,6 +102,7 @@ component =
     { media: input.media
     , selectedTab: fromMaybe DisplayTab input.selectedTab
     , selectedMedia: []
+    , uploadConfig: input.uploadConfig
     }
 
   handleQuery ::
@@ -181,6 +183,6 @@ component =
               (SProxy :: _ "upload")
               unit
               Upload.component
-              unit
+              { config: state.uploadConfig }
               (Just <<< ULOutput)
       ]

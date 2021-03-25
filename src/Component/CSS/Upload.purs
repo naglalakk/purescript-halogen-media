@@ -50,9 +50,6 @@ uploads = do
   CSS.fromString ".uploads" ? do
     CSS.display CSS.flex
     CSS.flexWrap CSS.wrap 
-    CSS.position CSS.absolute
-    CSS.top $ CSS.px 0.0
-    CSS.left $ CSS.px 0.0
 
 uploadFile :: CSS.CSS
 uploadFile = do

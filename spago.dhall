@@ -14,7 +14,6 @@ You can edit this file as you like.
     , "effect"
     , "filesize"
     , "foreign-generic"
-    --, "generics-rep"
     , "halogen"
     , "halogen-css"
     , "generics-rep"

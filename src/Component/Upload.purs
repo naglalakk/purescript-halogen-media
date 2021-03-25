@@ -1,12 +1,14 @@
 module Halogen.Media.Component.Upload where
 
 import Prelude
+
 import CSS as CSS
 import Control.Monad.Except (runExcept)
 import Data.Array (length, findIndex, modifyAt)
 import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..), fromJust, fromMaybe)
+import Data.Newtype (unwrap)
 import Data.Traversable (traverse)
 import Data.UUID (UUID, genUUID)
 import Effect (Effect)
@@ -22,6 +24,7 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.Media.Component.CSS.Upload as UploadStyle
 import Halogen.Media.Component.HTML.Utils (css)
+import Halogen.Media.Data.Config.Upload (UploadConfig(..), defaultUploadConfig)
 import Halogen.Media.Data.File (ExtendedFile(..), ExtendedFileArray, UploadFile(..), UploadFileArray)
 import Halogen.Media.Utils (fileListToFiles)
 import Halogen.Query.EventSource as HES
@@ -36,14 +39,16 @@ import Web.HTML.Event.EventTypes (load)
 type State
   = { files :: UploadFileArray
     , reader :: Maybe FileReader.FileReader
+    , config :: UploadConfig
     }
 
 data Output
   = DroppedFiles ExtendedFileArray
   | UploadFiles ExtendedFileArray
 
-type Input
-  = Unit
+type Input = 
+  { config :: Maybe UploadConfig
+  }
 
 data Action
   = Initialize
@@ -83,7 +88,7 @@ component ::
   H.Component HH.HTML Query Input Output m
 component =
   H.mkComponent
-    { initialState: const initialState
+    { initialState: initialState
     , render
     , eval:
         H.mkEval
@@ -94,10 +99,11 @@ component =
             }
     }
   where
-  initialState :: State
-  initialState =
+  initialState :: Input -> State
+  initialState inp =
     { files: []
     , reader: Nothing
+    , config: fromMaybe defaultUploadConfig inp.config
     }
 
   fileCallback :: EV.Event -> Maybe (Effect Foreign)
@@ -146,12 +152,15 @@ component =
     Initialize -> do
       pure unit
     HandleFileUpload uuid fr -> do
+      state <- H.get
       src <- H.liftEffect fr
       let
-        thumbnail = runExcept $ readString src
+        conf = unwrap state.config
+        thumbnail = case conf.uploadThumbnail of
+          Just thumb -> Right thumb
+          Nothing    -> runExcept $ readString src
       case thumbnail of
         Right thumb -> do
-          state <- H.get
           let
             index = findIndex (\(UploadFile (ExtendedFile f u t) status) -> u == uuid) state.files
           case index of
@@ -163,50 +172,56 @@ component =
                 Nothing -> pure unit
             Nothing -> pure unit
         Left err -> logShow err
+
     PreventDefault ev -> H.liftEffect $ EV.preventDefault ev
+
     SetFiles ev -> do
       state <- H.get
       let
         event = DE.toEvent ev
-
-        eventTarget =
-          unsafePartial
-            $ fromJust
-            $ EV.currentTarget event
-
-        droppedFiles =
-          fileListToFiles
-            $ DT.files
-            $ DE.dataTransfer ev
+        hasReachedLimit = length state.files == (unwrap state.config).maxUploads
       H.liftEffect $ EV.preventDefault event
-      extendedFiles <-
-        traverse
-          ( \x -> do
-              uuid <- H.liftEffect $ genUUID
-              reader <- H.liftEffect $ FileReader.fileReader
-              _ <- H.subscribe (HandleFileUpload uuid <$> (fileEventSource reader))
-              let
-                blob = File.toBlob x
-              H.liftEffect $ FileReader.readAsDataURL blob reader
-              pure $ ExtendedFile x uuid Nothing
-          )
-          droppedFiles
-      let
-        uploadFiles = map (\(ExtendedFile file uuid thumb) -> UploadFile (ExtendedFile file uuid thumb) false) extendedFiles
+      if hasReachedLimit
+        then pure unit
+        else do
+          let
+            eventTarget =
+              unsafePartial
+                $ fromJust
+                $ EV.currentTarget event
 
-        allFiles = state.files <> uploadFiles
-      -- Get thumbnails for files
-      H.modify_ _ { files = allFiles }
-      -- Raise only the files
-      -- being uploaded
-      H.raise $ DroppedFiles extendedFiles
+            droppedFiles =
+              fileListToFiles
+                $ DT.files
+                $ DE.dataTransfer ev
+          extendedFiles <-
+            traverse
+              ( \x -> do
+                  uuid <- H.liftEffect $ genUUID
+                  reader <- H.liftEffect $ FileReader.fileReader
+                  _ <- H.subscribe (HandleFileUpload uuid <$> (fileEventSource reader))
+                  let
+                    blob = File.toBlob x
+                  H.liftEffect $ FileReader.readAsDataURL blob reader
+                  pure $ ExtendedFile x uuid Nothing
+              )
+              droppedFiles
+          let
+            uploadFiles = map (\(ExtendedFile file uuid thumb) -> UploadFile (ExtendedFile file uuid thumb) false) extendedFiles
+
+            allFiles = state.files <> uploadFiles
+          -- Get thumbnails for files
+          H.modify_ _ { files = allFiles }
+          -- Raise only the files
+          -- being uploaded
+          H.raise $ DroppedFiles extendedFiles
     SubmitFiles -> do
       state <- H.get
       let
         uploadFiles = map (\(UploadFile (ExtendedFile file uuid thumb) status) -> ExtendedFile file uuid thumb) state.files
       H.raise $ UploadFiles uploadFiles
 
-  renderFile (UploadFile (ExtendedFile file uuid thumb) status) =
+  renderFile (UploadConfig conf) (UploadFile (ExtendedFile file uuid thumb) status) =
     HH.div
       [ css "upload-file"
       ]
@@ -225,14 +240,14 @@ component =
               [ css "upload-title" ]
               [ HH.b
                   []
-                  [ HH.text "Name: " ]
+                  [ HH.text $ conf.nameLabel <> ": " ]
               , HH.text $ File.name file
               ]
           , HH.li
               [ css "upload-size" ]
               [ HH.b
                   []
-                  [ HH.text "Filesize: " ]
+                  [ HH.text $ conf.fileSizeLabel <> ": " ]
               , HH.text $ getHumanSize $ File.size file
               ]
           , HH.li
@@ -241,10 +256,10 @@ component =
                   []
                   [ HH.b
                       []
-                      [ HH.text "Status: " ]
+                      [ HH.text $ conf.statusLabel <> ": " ]
                   , case status of
-                      true -> HH.text "Completed"
-                      false -> HH.text "Pending"
+                      true -> HH.text conf.completedLabel
+                      false -> HH.text conf.pendingLabel
                   ]
               ]
           ]
@@ -262,12 +277,12 @@ component =
           , HE.onDrop $ \e -> Just $ SetFiles e
           ]
           [ if (length state.files <= 0) then
-              HH.text "Drop files here"
+              HH.text $ (unwrap state.config).defaultLabel
             else
               HH.text ""
           , HH.div
               [ css "uploads"
               ]
-              (state.files <#> renderFile)
+              (state.files <#> (renderFile state.config))
           ]
       ]
