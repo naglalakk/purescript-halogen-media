@@ -30,6 +30,7 @@ import Halogen.Media.Utils (fileListToFiles)
 import Halogen.Query.EventSource as HES
 import Partial.Unsafe (unsafePartial)
 import Web.Event.Event as EV
+import Web.File.File (File)
 import Web.File.File as File
 import Web.File.FileReader as FileReader
 import Web.HTML.Event.DataTransfer as DT
@@ -53,6 +54,8 @@ type Input =
 data Action
   = Initialize
   | HandleFileUpload UUID (Effect Foreign)
+  | ProcessFiles (Array File)
+  | SetFilesMobile (Array File)
   | SetFiles DE.DragEvent
   | SubmitFiles
   | PreventDefault EV.Event
@@ -175,11 +178,38 @@ component =
 
     PreventDefault ev -> H.liftEffect $ EV.preventDefault ev
 
+    ProcessFiles files -> do
+      state <- H.get
+      extendedFiles <-
+        traverse
+          ( \x -> do
+              uuid <- H.liftEffect $ genUUID
+              reader <- H.liftEffect $ FileReader.fileReader
+              _ <- H.subscribe (HandleFileUpload uuid <$> (fileEventSource reader))
+              let
+                blob = File.toBlob x
+              H.liftEffect $ FileReader.readAsDataURL blob reader
+              pure $ ExtendedFile x uuid Nothing
+          )
+          files
+      let
+        uploadFiles = map (\(ExtendedFile file uuid thumb) -> UploadFile (ExtendedFile file uuid thumb) false) extendedFiles
+
+        allFiles = state.files <> uploadFiles
+      -- Get thumbnails for files
+      H.modify_ _ { files = allFiles }
+      -- Raise only the files
+      -- being uploaded
+      H.raise $ DroppedFiles extendedFiles
+
+    SetFilesMobile files -> handleAction $ ProcessFiles files
+
     SetFiles ev -> do
       state <- H.get
       let
         event = DE.toEvent ev
-        hasReachedLimit = length state.files == (unwrap state.config).maxUploads
+        maxUploads = (unwrap state.config).maxUploads
+        hasReachedLimit = length state.files == maxUploads
       H.liftEffect $ EV.preventDefault event
       if hasReachedLimit
         then pure unit
@@ -192,29 +222,9 @@ component =
 
             droppedFiles =
               fileListToFiles
-                $ DT.files
-                $ DE.dataTransfer ev
-          extendedFiles <-
-            traverse
-              ( \x -> do
-                  uuid <- H.liftEffect $ genUUID
-                  reader <- H.liftEffect $ FileReader.fileReader
-                  _ <- H.subscribe (HandleFileUpload uuid <$> (fileEventSource reader))
-                  let
-                    blob = File.toBlob x
-                  H.liftEffect $ FileReader.readAsDataURL blob reader
-                  pure $ ExtendedFile x uuid Nothing
-              )
-              droppedFiles
-          let
-            uploadFiles = map (\(ExtendedFile file uuid thumb) -> UploadFile (ExtendedFile file uuid thumb) false) extendedFiles
+                $ DT.files $ DE.dataTransfer ev
+          handleAction $ ProcessFiles droppedFiles
 
-            allFiles = state.files <> uploadFiles
-          -- Get thumbnails for files
-          H.modify_ _ { files = allFiles }
-          -- Raise only the files
-          -- being uploaded
-          H.raise $ DroppedFiles extendedFiles
     SubmitFiles -> do
       state <- H.get
       let
@@ -268,6 +278,11 @@ component =
       [ css "upload-container"
       ]
       [ UploadStyle.stylesheet
+      , HH.input
+        [ css "upload-mobile" 
+        , HP.type_ HP.InputFile
+        , HE.onFileUpload $ \files -> Just $ SetFilesMobile files
+        ]
       , HH.div
           [ css "dropbox"
           , HE.onDragOver $ \e -> Just $ PreventDefault $ DE.toEvent e

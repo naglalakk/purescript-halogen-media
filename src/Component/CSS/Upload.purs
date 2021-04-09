@@ -1,22 +1,24 @@
 module Halogen.Media.Component.CSS.Upload where
 
 import Prelude
-import Color                                as Color
-import CSS                                  as CSS
-import CSS                                  ((&),(?))
-import CSS.Flexbox                          (flex)
-import CSS.Common                           (center, auto)
-import CSS.TextAlign                        (textAlign
-                                            ,TextAlign(..))
-import CSS.Overflow                         (overflow
-                                            ,overflowY, scroll)
-import CSS.ListStyle.Type                   as LT
-import Halogen.HTML.CSS                     as HCSS
-import Halogen.Media.Component.CSS.Utils    (padding, margin)
+
+import CSS ((&), (?))
+import CSS as CSS
+import CSS.Common (auto, center)
+import CSS.Flexbox (flex)
+import CSS.ListStyle.Type as LT
+import CSS.Media as Media
+import CSS.Overflow (overflow, overflowY, scroll)
+import CSS.TextAlign (textAlign, TextAlign(..))
+import Color as Color
+import Data.NonEmpty (singleton)
+import Halogen.HTML.CSS as HCSS
+import Halogen.Media.Component.CSS.Utils (padding, margin)
 
 stylesheet = HCSS.stylesheet do
   uploadContainer
   dropbox
+  uploadMobile
   uploads 
   uploadFile
   uploadInfo
@@ -43,7 +45,18 @@ dropbox = do
     CSS.marginBottom $ CSS.px 25.0
     margin 25.0
     overflowY scroll
-    
+
+    CSS.query Media.screen (singleton $ Media.maxWidth $ CSS.px 992.0) $ do
+      CSS.display CSS.displayNone
+
+uploadMobile :: CSS.CSS
+uploadMobile =
+  CSS.fromString ".upload-mobile" ? do
+    CSS.display CSS.displayNone
+    margin 25.0
+
+    CSS.query Media.screen (singleton $ Media.maxWidth $ CSS.px 992.0) $ do
+      CSS.display CSS.block
 
 uploads :: CSS.CSS
 uploads = do
