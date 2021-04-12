@@ -26,7 +26,7 @@ import Halogen.Media.Component.CSS.Upload as UploadStyle
 import Halogen.Media.Component.HTML.Utils (css)
 import Halogen.Media.Data.Config.Upload (UploadConfig(..), defaultUploadConfig)
 import Halogen.Media.Data.File (ExtendedFile(..), ExtendedFileArray, UploadFile(..), UploadFileArray)
-import Halogen.Media.Utils (fileListToFiles)
+import Halogen.Media.Utils (fileListToFiles, verifyFiles)
 import Halogen.Query.EventSource as HES
 import Partial.Unsafe (unsafePartial)
 import Web.Event.Event as EV
@@ -41,6 +41,7 @@ type State
   = { files :: UploadFileArray
     , reader :: Maybe FileReader.FileReader
     , config :: UploadConfig
+    , acceptError :: Boolean
     }
 
 data Output
@@ -69,10 +70,10 @@ data Query a
 derive instance genericOutput :: Generic Output _
 
 instance showOutput :: Show Output where
-  show (UploadFiles fl) =
+  show (DroppedFiles fl) =
     show
       $ map (\(ExtendedFile f uuid thumb) -> File.name f) fl
-  show (DroppedFiles fl) =
+  show (UploadFiles fl) =
     show
       $ map (\(ExtendedFile f uuid thumb) -> File.name f) fl
 
@@ -107,6 +108,7 @@ component =
     { files: []
     , reader: Nothing
     , config: fromMaybe defaultUploadConfig inp.config
+    , acceptError: false
     }
 
   fileCallback :: EV.Event -> Maybe (Effect Foreign)
@@ -179,6 +181,7 @@ component =
     PreventDefault ev -> H.liftEffect $ EV.preventDefault ev
 
     ProcessFiles files -> do
+      H.modify_ _ { acceptError = false }
       state <- H.get
       extendedFiles <-
         traverse
@@ -202,13 +205,20 @@ component =
       -- being uploaded
       H.raise $ DroppedFiles extendedFiles
 
-    SetFilesMobile files -> handleAction $ ProcessFiles files
+    SetFilesMobile files -> do
+      state <- H.get
+      let
+        accept = (unwrap state.config).accept
+      case verifyFiles accept files of 
+        true -> handleAction $ ProcessFiles files
+        false -> H.modify_ _ { acceptError = true }
 
     SetFiles ev -> do
       state <- H.get
       let
         event = DE.toEvent ev
         maxUploads = (unwrap state.config).maxUploads
+        accept = (unwrap state.config).accept
         hasReachedLimit = length state.files == maxUploads
       H.liftEffect $ EV.preventDefault event
       if hasReachedLimit
@@ -223,7 +233,9 @@ component =
             droppedFiles =
               fileListToFiles
                 $ DT.files $ DE.dataTransfer ev
-          handleAction $ ProcessFiles droppedFiles
+          case verifyFiles accept droppedFiles of 
+            true -> handleAction $ ProcessFiles droppedFiles
+            false -> H.modify_ _ { acceptError = true }
 
     SubmitFiles -> do
       state <- H.get
@@ -278,10 +290,16 @@ component =
       [ css "upload-container"
       ]
       [ UploadStyle.stylesheet
-      , HH.input
-        [ css "upload-mobile" 
-        , HP.type_ HP.InputFile
-        , HE.onFileUpload $ \files -> Just $ SetFilesMobile files
+      , HH.div
+        [ css "upload-mobile" ]
+        [ HH.input
+          [ css "upload-mobile" 
+          , HP.type_ HP.InputFile
+          , HE.onFileUpload $ \files -> Just $ SetFilesMobile files
+          ]
+        , case state.acceptError of
+            true -> HH.p [] [ HH.text $ (unwrap state.config).acceptError ]
+            false -> HH.div [] []
         ]
       , HH.div
           [ css "dropbox"
@@ -289,7 +307,11 @@ component =
           , HE.onDrop $ \e -> Just $ SetFiles e
           ]
           [ if (length state.files <= 0) then
-              HH.text $ (unwrap state.config).defaultLabel
+              if state.acceptError then
+                HH.text $ (unwrap state.config).acceptError
+              else
+                HH.text $ (unwrap state.config).defaultLabel
+
             else
               HH.text ""
           , HH.div

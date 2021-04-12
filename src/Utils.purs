@@ -1,15 +1,16 @@
 module Halogen.Media.Utils where
 
 import Prelude
-import Data.Array ((..), catMaybes)
-import Data.Maybe (Maybe(..))
+
+import Data.Array (catMaybes, find, last, (..))
+import Data.Foldable (and)
+import Data.Maybe (Maybe(..), isJust)
+import Data.String (Pattern(..), contains, split)
 import Effect (Effect)
-import Halogen.Media.Data.File
-  ( ExtendedFile(..)
-  )
+import Halogen.Media.Data.File (ExtendedFile(..))
 import Halogen.Media.FormData as CFD
-import Web.File.FileList as FL
 import Web.File.File as File
+import Web.File.FileList as FL
 import Web.XHR.FormData as FD
 
 -- | Utility function to go from
@@ -32,3 +33,18 @@ fileToFormData entryName (ExtendedFile file uuid fileName) = do
   formData <- FD.new
   CFD.appendFile (FD.EntryName entryName) file formData
   pure formData
+
+verifyFiles :: Array String  -> Array File.File -> Boolean
+verifyFiles [] files = true
+verifyFiles accept files = and results
+  where
+    results = map (\x -> do
+      let
+        name = File.name x 
+        ext  = last $ split (Pattern ".") name
+      case ext of
+        Just extension -> 
+          isJust $ find (\acc -> acc == extension) accept
+        Nothing -> false
+    ) files
+

@@ -110,6 +110,8 @@ component =
         , media: state.media
         , uploadConfig: Just $ UploadConfig
           { maxUploads: 1
+          , accept: ["jpg", "png"]
+          , acceptError: "File not allowed. Allowed extensions: [jpg, png]"
           , defaultLabel: "Some default label"
           , pendingLabel: "Pending"
           , completedLabel: "Completed"

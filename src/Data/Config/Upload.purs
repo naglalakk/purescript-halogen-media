@@ -7,6 +7,8 @@ import Data.Newtype (class Newtype)
 
 newtype UploadConfig = UploadConfig 
   { maxUploads :: Int
+  , accept :: Array String
+  , acceptError :: String
   , defaultLabel :: String
   , pendingLabel :: String
   , completedLabel :: String
@@ -24,6 +26,8 @@ derive instance eqUploadConfig :: Eq UploadConfig
 defaultUploadConfig :: UploadConfig
 defaultUploadConfig = UploadConfig
   { maxUploads: 1000
+  , accept: []
+  , acceptError: "File not allowed"
   , defaultLabel: "Drop files here"
   , pendingLabel: "Pending"
   , completedLabel: "Completed"
