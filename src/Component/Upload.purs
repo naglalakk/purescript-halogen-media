@@ -306,14 +306,17 @@ component =
           , HE.onDragOver $ \e -> Just $ PreventDefault $ DE.toEvent e
           , HE.onDrop $ \e -> Just $ SetFiles e
           ]
-          [ if (length state.files <= 0) then
-              if state.acceptError then
-                HH.text $ (unwrap state.config).acceptError
+          [ HH.label
+            [ css "dropbox-label" ]
+            [ if (length state.files <= 0) 
+                then
+                  if state.acceptError then
+                    HH.text $ (unwrap state.config).acceptError
+                  else
+                    HH.text $ (unwrap state.config).defaultLabel
               else
-                HH.text $ (unwrap state.config).defaultLabel
-
-            else
-              HH.text ""
+                HH.text ""
+            ]
           , HH.div
               [ css "uploads"
               ]

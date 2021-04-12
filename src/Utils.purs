@@ -5,7 +5,7 @@ import Prelude
 import Data.Array (catMaybes, find, last, (..))
 import Data.Foldable (and)
 import Data.Maybe (Maybe(..), isJust)
-import Data.String (Pattern(..), contains, split)
+import Data.String (Pattern(..), contains, split, toLower)
 import Effect (Effect)
 import Halogen.Media.Data.File (ExtendedFile(..))
 import Halogen.Media.FormData as CFD
@@ -44,7 +44,7 @@ verifyFiles accept files = and results
         ext  = last $ split (Pattern ".") name
       case ext of
         Just extension -> 
-          isJust $ find (\acc -> acc == extension) accept
+          isJust $ find (\acc -> toLower acc == toLower extension) accept
         Nothing -> false
     ) files
 

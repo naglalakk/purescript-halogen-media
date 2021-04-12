@@ -49,6 +49,9 @@ dropbox = do
     CSS.query Media.screen (singleton $ Media.maxWidth $ CSS.px 992.0) $ do
       CSS.display CSS.displayNone
 
+    CSS.fromString ".dropbox-label" ? do
+      padding 25.0
+
 uploadMobile :: CSS.CSS
 uploadMobile =
   CSS.fromString ".upload-mobile" ? do
@@ -105,3 +108,4 @@ uploadThumbnail = do
 
   CSS.fromString ".upload-thumbnail > img" ? do
     CSS.width $ CSS.pct 100.0
+
